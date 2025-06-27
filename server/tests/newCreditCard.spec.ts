@@ -4,7 +4,7 @@ import {CREDIT_CARD} from "../vars/localProductUrls";
 import {eligibility} from "../flows/eligibility";
 import {loginNew} from "../flows/login/loginNew";
 import {kycNew} from "../flows/kyc/kycNew";
-import {incomeNew} from "../flows/incomeNew";
+import {incomeNew} from "../flows/income/incomeNew";
 import {acceptDisclosures, getLoanUrl} from "../vars/utilMethods";
 
 test("newCreditCard", async ({page}) => {

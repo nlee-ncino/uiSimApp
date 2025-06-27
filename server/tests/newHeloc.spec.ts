@@ -6,7 +6,7 @@ import {productSelection} from "../flows/productSelection";
 import {loginNew} from "../flows/login/loginNew";
 import {helocNew} from "../flows/helocNeedsNew";
 import {kycNew} from "../flows/kyc/kycNew";
-import {incomeNew} from "../flows/incomeNew";
+import {incomeNew} from "../flows/income/incomeNew";
 import {demographicsNew} from "../flows/demographicsNew";
 import {propertyDetailsNew} from "../flows/propertyDetailsNew";
 import {getLoanUrl} from "../vars/utilMethods";

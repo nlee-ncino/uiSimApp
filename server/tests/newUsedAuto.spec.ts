@@ -9,7 +9,7 @@ import {getLoanUrl} from "../vars/utilMethods";
 import {coappInfo} from "../flows/coappInfo";
 import {loginNew} from "../flows/login/loginNew";
 import {kycNew} from "../flows/kyc/kycNew";
-import {incomeNew} from "../flows/incomeNew";
+import {incomeNew} from "../flows/income/incomeNew";
 
 test("newUsedAuto", async ({page}) => {
     test.setTimeout(600_000);

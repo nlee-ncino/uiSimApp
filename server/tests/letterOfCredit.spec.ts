@@ -4,7 +4,7 @@ import {eligibility} from "../flows/eligibility";
 import {LETTER_OF_CREDIT} from "../vars/localProductUrls";
 import {productSelection} from "../flows/productSelection";
 import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/incomePrefill";
+import {incomePrefill} from "../flows/income/incomePrefill";
 import {letterOfCreditNeeds} from "../flows/letterOfCreditNeeds";
 import {UNSECURED_LOC} from "../vars/qaProductUrls";
 import {getLoanUrl} from "../vars/utilMethods";

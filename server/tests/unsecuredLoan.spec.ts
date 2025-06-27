@@ -4,7 +4,7 @@ import {UNSECURED_TERM_LOAN} from "../vars/localProductUrls";
 import {eligibility} from "../flows/eligibility";
 import {productSelection} from "../flows/productSelection";
 import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/incomePrefill";
+import {incomePrefill} from "../flows/income/incomePrefill";
 import {unsecuredTermNeeds} from "../flows/unsecuredTermNeeds";
 import {UNSECURED_LOAN} from "../vars/qaProductUrls";
 import {getLoanUrl} from "../vars/utilMethods";

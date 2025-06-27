@@ -5,7 +5,7 @@ import {productSelection} from "../flows/productSelection";
 import {unsecuredTermNeeds} from "../flows/unsecuredTermNeeds";
 import {loginNew} from "../flows/login/loginNew";
 import {kycNew} from "../flows/kyc/kycNew";
-import {incomeNew} from "../flows/incomeNew";
+import {incomeNew} from "../flows/income/incomeNew";
 import {UNSECURED_LOAN} from "../vars/qaProductUrls";
 import {getLoanUrl} from "../vars/utilMethods";
 import {coappInfo} from "../flows/coappInfo";

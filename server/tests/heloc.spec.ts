@@ -9,7 +9,7 @@ import {propertyDetailsNew} from "../flows/propertyDetailsNew";
 import {getLoanUrl} from "../vars/utilMethods";
 import {loginPrefill} from "../flows/login/loginPrefill";
 import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/incomePrefill";
+import {incomePrefill} from "../flows/income/incomePrefill";
 import {coappInfo} from "../flows/coappInfo";
 
 test("heloc", async ({page}) => {

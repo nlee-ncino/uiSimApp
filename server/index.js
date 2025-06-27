@@ -46,11 +46,24 @@ const getUrlPath = (testType, isPrefill) => {
     return path;
 };
 
+const buildTestCommand = (params) => {
+    const envVars = Object.entries(params)
+        .filter(([key]) => key !== 'path')
+        .map(([key, value]) => {
+            // Convert camelCase to UPPERCASE for environment variables
+            const envKey = key === 'environment' ? 'ENVIRONMENT' : key.toUpperCase();
+            return `${envKey}=${value}`;
+        })
+        .join(' ');
+
+    return `${envVars} npx playwright test ${params.path} --headed`;
+};
+
 app.use(cors());
 app.use(bodyParser.json());
 
 // API routes
-app.post('/run-tests', async (req, res) => {
+app.post('/run-tests', async (req) => {
     try {
         const {
             email,
@@ -70,23 +83,33 @@ app.post('/run-tests', async (req, res) => {
             prNumber,
             failEligibility
         } = req.body;
-        console.log(
-            `Email: ${email}, Password: ${password}, Test Type: ${testType}, isPrefill: ${isPrefill}, hasCoApplicant: ${hasCoApplicant}, environmentType: ${environmentType}, First Name: ${firstName}, Last Name: ${lastName}, Phone: ${phone} DOB: ${dob}, SSN: ${ssn}, Address: ${address}, City: ${city}, Zip: ${zip}, PR Number: ${prNumber}, Fail Eligibility: ${failEligibility}`
-        );
 
         const path = getUrlPath(testType, isPrefill);
-
-        exec(
-            `EMAIL=${email} PASSWORD=${password} HASCOAPPLICANT=${hasCoApplicant} ENVIRONMENT=${environmentType} FIRSTNAME=${firstName} LASTNAME=${lastName} PHONE=${phone} DOB=${dob} SSN=${ssn} ADDRESS=${address} CITY=${city} ZIP=${zip} PRNUMBER=${prNumber} FAILELIGIBILITY=${failEligibility} npx playwright test ${path} --headed`
-        );
-        res.send('Tests completed successfully');
+        const testCommand = buildTestCommand({
+            email,
+            password,
+            hasCoApplicant,
+            environment: environmentType,
+            firstName,
+            lastName,
+            phone,
+            dob,
+            ssn,
+            address,
+            city,
+            zip,
+            prNumber,
+            failEligibility,
+            path
+        })
+        console.log('Running test command:', testCommand);
+        exec(testCommand);
     } catch (error) {
         console.error('Error running tests:', error);
-        res.status(500).send(`Error running tests: ${error.message}`);
     }
 });
 
-app.post('/run-tests-batch', async (req, res) => {
+app.post('/run-tests-batch', async (req) => {
     try {
         const {
             email,
@@ -106,16 +129,29 @@ app.post('/run-tests-batch', async (req, res) => {
             prNumber,
             failEligibility
         } = req.body;
-        console.log(
-            `Email: ${email}, Password: ${password}, Test Type: ${testType}, isPrefill: ${isPrefill}, hasCoApplicant: ${hasCoApplicant}, urls: ${urls}, First Name: ${firstName}, Last Name: ${lastName}, Phone: ${phone} DOB: ${dob}, SSN: ${ssn}, Address: ${address}, City: ${city}, Zip: ${zip}, PR Number: ${prNumber}, Fail Eligibility: ${failEligibility}`
-        );
 
         const path = getUrlPath(testType, isPrefill);
 
         urls.forEach((envUrl) => {
-            const command = `EMAIL=${email} PASSWORD=${password} HASCOAPPLICANT=${hasCoApplicant} ENVIRONMENT=${envUrl} FIRSTNAME=${firstName} LASTNAME=${lastName} PHONE=${phone} DOB=${dob} SSN=${ssn} ADDRESS=${address} CITY=${city} ZIP=${zip} PRNUMBER=${prNumber} FAILELIGIBILITY=${failEligibility} npx playwright test ${path} --headed`;
-
-            exec(command, (error, stdout, stderr) => {
+            const testCommand = buildTestCommand({
+                email,
+                password,
+                hasCoApplicant,
+                environment: envUrl,
+                firstName,
+                lastName,
+                phone,
+                dob,
+                ssn,
+                address,
+                city,
+                zip,
+                prNumber,
+                failEligibility,
+                path
+            })
+            console.log(`Running test command for ${envUrl}:`, testCommand);
+            exec(testCommand, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error for ${envUrl}:`, error);
                     return;
@@ -126,11 +162,8 @@ app.post('/run-tests-batch', async (req, res) => {
                 }
             });
         });
-
-        res.send('Batch tests completed successfully');
     } catch (error) {
         console.error('Error running batch tests:', error);
-        res.status(500).send(`Error running batch tests: ${error.message}`);
     }
 });
 

@@ -5,7 +5,7 @@ import {eligibility} from "../flows/eligibility";
 import {acceptDisclosures, getLoanUrl} from "../vars/utilMethods";
 import {loginPrefill} from "../flows/login/loginPrefill";
 import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/incomePrefill";
+import {incomePrefill} from "../flows/income/incomePrefill";
 
 test("creditCardPrefill", async ({page}) => {
     test.setTimeout(600_000);

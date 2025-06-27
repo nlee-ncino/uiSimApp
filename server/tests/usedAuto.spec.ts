@@ -3,7 +3,7 @@ import {loginPrefill} from "../flows/login/loginPrefill";
 import {eligibility} from "../flows/eligibility";
 import {productSelection} from "../flows/productSelection";
 import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/incomePrefill";
+import {incomePrefill} from "../flows/income/incomePrefill";
 import {AUTOMOBILE} from "../vars/localProductUrls";
 import {autoDetails} from "../flows/auto/autoDetails";
 import {autoNeeds} from "../flows/auto/autoNeeds";
