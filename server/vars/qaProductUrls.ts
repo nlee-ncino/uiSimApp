@@ -1,0 +1,13 @@
+export const CD_6_MO = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SRtAAM";
+export const GOLD_CHECKING = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SRpAAM";
+export const MONEY_MARKET = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SS2AAM";
+export const GOLD_SAVINGS = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SRxAAM";
+export const ADJUSTABLE_RATE_MORTGAGE = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uWL000001bzAPYAY";
+export const HOME_EQUITY_LINE_OF_CREDIT = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSMAA2";
+export const HOME_EQUITY_TERM = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSNAA2";
+export const PURCHASE = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000000BNBIAA4";
+export const REFINANCE = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uWL000000bNvJYAU";
+export const CASH_REWARDS_CREDIT_CARD = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSLAA2";
+export const UNSECURED_LOC = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSJAA2";
+export const AUTOMOBILE = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSCAA2";
+export const UNSECURED_LOAN = "https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSBAA2";
