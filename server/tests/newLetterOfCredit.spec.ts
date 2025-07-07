@@ -1,4 +1,4 @@
-import {test} from "@playwright/test";
+import {test} from './testSetup';
 import {eligibility} from "../flows/eligibility";
 import {LETTER_OF_CREDIT} from "../vars/localProductUrls";
 import {productSelection} from "../flows/productSelection";

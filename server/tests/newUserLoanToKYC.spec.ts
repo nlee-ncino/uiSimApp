@@ -1,4 +1,4 @@
-import {test} from "@playwright/test";
+import {test} from './testSetup';
 import {loginNew} from "../flows/login/loginNew";
 import {UNSECURED_TERM_LOAN} from "../vars/localProductUrls";
 import {eligibility} from "../flows/eligibility";

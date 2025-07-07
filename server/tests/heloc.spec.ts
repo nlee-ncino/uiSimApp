@@ -1,4 +1,4 @@
-import {test} from "@playwright/test";
+import {test} from './testSetup';
 import {HOME_EQUITY_LINE_OF_CREDIT} from "../vars/qaProductUrls";
 import {HELOC} from "../vars/localProductUrls";
 import {eligibility} from "../flows/eligibility";
