@@ -10,7 +10,7 @@ export const kycNew = async (page: any) => {
     await acceptDisclosures(page);
 
     //this page needs more time for the backend to process the data
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(5000);
     await page.getByRole("button", {name: "Save & Continue"}).click();
     await page.waitForTimeout(200);
 };
