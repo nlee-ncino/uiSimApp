@@ -231,7 +231,7 @@ export default {
       try {
         // Check if batch URLs are provided
         if (this.formData.batchUrls.trim() !== '') {
-          const urlPattern = /https?:\/\/\S+/g;
+          const urlPattern = /(https?:\/\/\S+)/g;
           const urls = this.formData.batchUrls.match(urlPattern);
 
           const payload = this.getBasePayload();
