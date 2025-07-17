@@ -26,4 +26,5 @@ package-lock.json
 server/package-lock.json
 server/playwright-report
 server/test-results
+server/temp-profile
 test-results/*
