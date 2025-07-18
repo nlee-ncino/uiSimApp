@@ -1,14 +1,14 @@
-import {test} from './testSetup';
-import {loginPrefill} from "../flows/login/loginPrefill";
-import {UNSECURED_TERM_LOAN} from "../vars/localProductUrls";
-import {eligibility} from "../flows/eligibility";
-import {productSelection} from "../flows/productSelection";
-import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/income/incomePrefill";
-import {unsecuredTermNeeds} from "../flows/unsecuredTermNeeds";
-import {UNSECURED_LOAN} from "../vars/qaProductUrls";
-import {getLoanUrl} from "../vars/utilMethods";
-import {coappInfo} from "../flows/coappInfo";
+import {test} from '../testSetup';
+import {loginPrefill} from "../../flows/login/loginPrefill";
+import {UNSECURED_TERM_LOAN} from "../../vars/localProductUrls";
+import {eligibility} from "../../flows/eligibility";
+import {productSelection} from "../../flows/productSelection";
+import {kycPrefill} from "../../flows/kyc/kycPrefill";
+import {incomePrefill} from "../../flows/income/incomePrefill";
+import {unsecuredTermNeeds} from "../../flows/unsecuredTermNeeds";
+import {UNSECURED_LOAN} from "../../vars/qaProductUrls";
+import {getLoanUrl} from "../../vars/utilMethods";
+import {coappInfo} from "../../flows/coappInfo";
 
 test("unsecuredLoanPrefill", async ({page}) => {
     test.setTimeout(600_000);

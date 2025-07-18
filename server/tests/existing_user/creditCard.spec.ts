@@ -1,11 +1,11 @@
-import {test} from './testSetup'
-import {CASH_REWARDS_CREDIT_CARD,} from "../vars/qaProductUrls";
-import {CREDIT_CARD} from "../vars/localProductUrls";
-import {eligibility} from "../flows/eligibility";
-import {acceptDisclosures, getLoanUrl} from "../vars/utilMethods";
-import {loginPrefill} from "../flows/login/loginPrefill";
-import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/income/incomePrefill";
+import {test} from '../testSetup'
+import {CASH_REWARDS_CREDIT_CARD,} from "../../vars/qaProductUrls";
+import {CREDIT_CARD} from "../../vars/localProductUrls";
+import {eligibility} from "../../flows/eligibility";
+import {acceptDisclosures, getLoanUrl} from "../../vars/utilMethods";
+import {loginPrefill} from "../../flows/login/loginPrefill";
+import {kycPrefill} from "../../flows/kyc/kycPrefill";
+import {incomePrefill} from "../../flows/income/incomePrefill";
 
 test("creditCardPrefill", async ({page}) => {
     test.setTimeout(600_000);

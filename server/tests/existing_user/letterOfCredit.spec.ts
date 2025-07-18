@@ -1,14 +1,14 @@
-import {test} from './testSetup';
-import {loginPrefill} from "../flows/login/loginPrefill";
-import {eligibility} from "../flows/eligibility";
-import {LETTER_OF_CREDIT} from "../vars/localProductUrls";
-import {productSelection} from "../flows/productSelection";
-import {kycPrefill} from "../flows/kyc/kycPrefill";
-import {incomePrefill} from "../flows/income/incomePrefill";
-import {letterOfCreditNeeds} from "../flows/letterOfCreditNeeds";
-import {UNSECURED_LOC} from "../vars/qaProductUrls";
-import {getLoanUrl} from "../vars/utilMethods";
-import {coappInfo} from "../flows/coappInfo";
+import {test} from '../testSetup';
+import {loginPrefill} from "../../flows/login/loginPrefill";
+import {eligibility} from "../../flows/eligibility";
+import {LETTER_OF_CREDIT} from "../../vars/localProductUrls";
+import {productSelection} from "../../flows/productSelection";
+import {kycPrefill} from "../../flows/kyc/kycPrefill";
+import {incomePrefill} from "../../flows/income/incomePrefill";
+import {letterOfCreditNeeds} from "../../flows/letterOfCreditNeeds";
+import {UNSECURED_LOC} from "../../vars/qaProductUrls";
+import {getLoanUrl} from "../../vars/utilMethods";
+import {coappInfo} from "../../flows/coappInfo";
 
 test("letterOfCredit", async ({page}) => {
     test.setTimeout(600_000);

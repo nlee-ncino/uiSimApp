@@ -8,39 +8,39 @@ const getUrlPath = (testType, isPrefill) => {
     let path = "";
     if (testType === "unsecuredTerm") {
         if (isPrefill) {
-            path = "tests/unsecuredLoan.spec.ts";
+            path = "tests/existing_user/unsecuredLoan.spec.ts";
         } else {
-            path = "tests/newUnsecuredLoan.spec.ts";
+            path = "tests/new_user/newUnsecuredLoan.spec.ts";
         }
     } else if (testType === "letterOfCredit") {
         if (isPrefill) {
-            path = "tests/letterOfCredit.spec.ts";
+            path = "tests/existing_user/letterOfCredit.spec.ts";
         } else {
-            path = "tests/newLetterOfCredit.spec.ts";
+            path = "tests/new_user/newLetterOfCredit.spec.ts";
         }
     } else if (testType === "auto") {
         if (isPrefill) {
-            path = "tests/usedAuto.spec.ts";
+            path = "tests/existing_user/usedAuto.spec.ts";
         } else {
-            path = "tests/newUsedAuto.spec.ts";
+            path = "tests/new_user/newUsedAuto.spec.ts";
         }
     } else if (testType === "loanToKYC") {
         if (isPrefill) {
-            path = "tests/userLoanToKYC.spec.ts";
+            path = "tests/existing_user/userLoanToKYC.spec.ts";
         } else {
-            path = "tests/newUserLoanToKYC.spec.ts";
+            path = "tests/new_user/newUserLoanToKYC.spec.ts";
         }
     } else if (testType === "heloc") {
         if (isPrefill) {
-            path = "tests/heloc.spec.ts";
+            path = "tests/existing_user/heloc.spec.ts";
         } else {
-            path = "tests/newHeloc.spec.ts";
+            path = "tests/new_user/newHeloc.spec.ts";
         }
     } else if (testType === "creditCard") {
         if (isPrefill) {
-            path = "tests/creditCard.spec.ts";
+            path = "tests/existing_user/creditCard.spec.ts";
         } else {
-            path = "tests/newCreditCard.spec.ts";
+            path = "tests/new_user/newCreditCard.spec.ts";
         }
     }
     return path;
