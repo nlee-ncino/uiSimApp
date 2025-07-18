@@ -1,32 +1,27 @@
-import { test as base, chromium } from '@playwright/test';
+import {chromium, test as base} from '@playwright/test';
 import path from 'path';
 
 export const test = base.extend({
-    context: async ({ browser }, use) => {
-        const isChromium = browser.browserType().name() === 'chromium';
-
+    context: async ({browser}, use) => {
         const commonContextOptions = {
             userAgent:
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            viewport: { width: 1920, height: 1080 },
+            viewport: {width: 1280, height: 720},
             javaScriptEnabled: true,
             bypassCSP: true,
             ignoreHTTPSErrors: true,
+            deviceScaleFactor: 1,
+            locale: 'en-US',
+            timezoneId: 'America/New_York'
         };
 
         const addStealthScripts = async (context) => {
             await context.addInitScript(() => {
-                Object.defineProperty(navigator, 'webdriver', { get: () => false });
-                Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+                Object.defineProperty(navigator, 'webdriver', {get: () => false});
+                Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
             });
         };
 
-        if (!isChromium) {
-            const context = await browser.newContext(commonContextOptions);
-            await addStealthScripts(context);
-            await use(context);
-            return;
-        }
 
         // Chromium-specific setup with Vue DevTools extension
         const vueDevToolsPath = path.join(__dirname, '../extensions/vue-tools/6.6.4_0');
@@ -37,6 +32,10 @@ export const test = base.extend({
             args: [
                 `--disable-extensions-except=${vueDevToolsPath}`,
                 `--load-extension=${vueDevToolsPath}`,
+                '--disable-blink-features=AutomationControlled',
+                '--enable-webgl',
+                '--use-gl=egl',
+                '--enable-accelerated-2d-canvas'
             ],
         });
 
@@ -49,4 +48,4 @@ export const test = base.extend({
     },
 });
 
-export { expect } from '@playwright/test';
+export {expect} from '@playwright/test';
