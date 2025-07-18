@@ -46,7 +46,7 @@ const getUrlPath = (testType, isPrefill) => {
     return path;
 };
 
-const buildTestCommand = (params) => {
+const buildTestCommand = (params, isBatch = false) => {
     const envVars = Object.entries(params)
         .filter(([key]) => key !== 'path')
         .map(([key, value]) => {
@@ -56,7 +56,10 @@ const buildTestCommand = (params) => {
         })
         .join(' ');
 
-    return `${envVars} npx playwright test ${params.path} --headed`;
+    // Add BATCH_TEST=true for batch tests
+    const batchEnv = isBatch ? 'BATCH_TEST=true ' : '';
+
+    return `${batchEnv}${envVars} npx playwright test ${params.path} --headed`;
 };
 
 app.use(cors());
@@ -103,6 +106,7 @@ app.post('/run-tests', async (req) => {
             path
         })
         console.log('Running test command:', testCommand);
+        exec('killall \'Chromium\'')
         exec(testCommand);
     } catch (error) {
         console.error('Error running tests:', error);
@@ -149,7 +153,7 @@ app.post('/run-tests-batch', async (req) => {
                 prNumber,
                 failEligibility,
                 path
-            })
+            }, true) // Pass true for isBatch parameter
             console.log(`Running test command for ${envUrl}:`, testCommand);
             exec(testCommand, (error, stdout, stderr) => {
                 if (error) {
