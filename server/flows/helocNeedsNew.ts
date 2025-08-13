@@ -11,8 +11,10 @@ export const helocNew = async (page: any) => {
     await page.getByRole('textbox', {name: 'Desired Loan Amount'}).fill('45000');
     await page.waitForTimeout(200);
 
-    if (!(process.env.PREMATURESTOP === "loanNeeds")) {
-        await page.getByRole('button', {name: 'Save & Continue'}).click();
-        await page.waitForTimeout(200);
+    if ((process.env.PREMATURESTOP === "loanNeeds")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole('button', {name: 'Save & Continue'}).click();
+    await page.waitForTimeout(200);
 };

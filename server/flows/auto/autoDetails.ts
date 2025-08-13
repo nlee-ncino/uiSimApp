@@ -41,11 +41,11 @@ export const autoDetails = async (page: any) => {
     await page.getByText("Sedan 4D A-Spec Technology 1.5L I4 Turbo Auto").click();
     await page.waitForTimeout(2500);
 
-    if (!(process.env.PREMATURESTOP === "loanDetails")) {
-        await page.getByRole("button", {name: "Continue"}).click();
-        await page.waitForTimeout(500);
+    if ((process.env.PREMATURESTOP === "loanDetails")) {
+        await new Promise(() => {});
     }
-
+    await page.getByRole("button", {name: "Continue"}).click();
+    await page.waitForTimeout(500);
     // auto review
     await page.getByRole("button", {name: "Continue"}).click();
     await page.waitForTimeout(500);

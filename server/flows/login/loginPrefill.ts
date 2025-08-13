@@ -23,8 +23,10 @@ export const loginPrefill = async (page: any, url: any) => {
     await page.getByRole("textbox", {name: "Password"}).fill(password);
     await page.waitForTimeout(200);
 
-    if (!(process.env.PREMATURESTOP === "login")) {
-        await page.getByRole('button', {name: 'Sign in'}).click();
-        await page.waitForTimeout(200);
+    if ((process.env.PREMATURESTOP === "login")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole('button', {name: 'Sign in'}).click();
+    await page.waitForTimeout(200);
 };

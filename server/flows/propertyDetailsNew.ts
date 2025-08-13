@@ -12,8 +12,10 @@ export const propertyDetailsNew = async (page: any) => {
     await page.waitForTimeout(200);
 
     //this isn't really loan details but i'm lazy lol
-    if (!(process.env.PREMATURESTOP === "loanDetails")) {
-        await page.getByRole('button', {name: 'Save & Continue'}).click();
-        await page.waitForTimeout(200);
+    if ((process.env.PREMATURESTOP === "loanDetails")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole('button', {name: 'Save & Continue'}).click();
+    await page.waitForTimeout(200);
 };

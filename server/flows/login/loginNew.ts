@@ -59,8 +59,10 @@ export const loginNew = async (page: any, url: any) => {
     await confirmPswdElement.fill(password);
     await page.waitForTimeout(200);
 
-    if (!(process.env.PREMATURESTOP === "login")) {
-        await page.getByRole("button", {name: "Register Account"}).click();
-        await page.waitForTimeout(200);
+    if ((process.env.PREMATURESTOP === "login")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole("button", {name: "Register Account"}).click();
+    await page.waitForTimeout(200);
 };

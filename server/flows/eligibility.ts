@@ -30,8 +30,10 @@ export const eligibility = async (page: any) => {
     await page.getByRole("radio", {name: "No"}).check();
     await page.waitForTimeout(500);
 
-    if (!(process.env.PREMATURESTOP === "eligibility")) {
-        await page.getByRole("button", {name: "Save & Continue"}).click();
-        await page.waitForTimeout(500);
+    if ((process.env.PREMATURESTOP === "eligibility")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole("button", {name: "Save & Continue"}).click();
+    await page.waitForTimeout(500);
 };

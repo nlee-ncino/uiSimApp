@@ -16,7 +16,9 @@ export const letterOfCreditNeeds = async (page: any) => {
     await page.waitForTimeout(200);
 
     await acceptDisclosures(page);
-    if (!(process.env.PREMATURESTOP === "loanNeeds")) {
-        await page.getByRole("button", {name: "Save & Continue"}).click();
+    if ((process.env.PREMATURESTOP === "loanNeeds")) {
+        await new Promise(() => {
+        });
     }
+    await page.getByRole("button", {name: "Save & Continue"}).click();
 };
