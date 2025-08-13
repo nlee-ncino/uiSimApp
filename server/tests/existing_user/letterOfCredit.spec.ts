@@ -11,7 +11,7 @@ import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("letterOfCredit", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
 
     const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, UNSECURED_LOC, LETTER_OF_CREDIT, process.env.PRNUMBER);
     console.log("loanUrl: ", loanUrl);

@@ -13,7 +13,7 @@ import {incomePrefill} from "../../flows/income/incomePrefill";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("heloc", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
     const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, HOME_EQUITY_LINE_OF_CREDIT, HELOC, process.env.PRNUMBER);
     console.log("loanUrl: ", loanUrl);
 

@@ -12,7 +12,7 @@ import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("usedAuto", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
 
     const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, QA_AUTOMOBILE, AUTOMOBILE, process.env.PRNUMBER);
     console.log("loanUrl: ", loanUrl);

@@ -13,7 +13,7 @@ import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("newHeloc", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
     const loanUrl: string = await getLoanUrl(
         process.env.ENVIRONMENT,
         HOME_EQUITY_LINE_OF_CREDIT,

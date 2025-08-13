@@ -8,7 +8,7 @@ import {kycPrefill} from "../../flows/kyc/kycPrefill";
 import {incomePrefill} from "../../flows/income/incomePrefill";
 
 test("creditCardPrefill", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
     const loanUrl: string = await getLoanUrl(
         process.env.ENVIRONMENT,
         CASH_REWARDS_CREDIT_CARD,

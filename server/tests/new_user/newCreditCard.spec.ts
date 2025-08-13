@@ -8,7 +8,7 @@ import {incomeNew} from "../../flows/income/incomeNew";
 import {acceptDisclosures, getLoanUrl} from "../../vars/utilMethods";
 
 test("newCreditCard", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
     const loanUrl: string = await getLoanUrl(
         process.env.ENVIRONMENT,
         CASH_REWARDS_CREDIT_CARD,

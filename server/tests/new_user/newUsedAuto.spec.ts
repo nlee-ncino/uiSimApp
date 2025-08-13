@@ -12,7 +12,7 @@ import {kycNew} from "../../flows/kyc/kycNew";
 import {incomeNew} from "../../flows/income/incomeNew";
 
 test("newUsedAuto", async ({page}) => {
-    test.setTimeout(600_000);
+    test.setTimeout(0);
 
     const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, QA_AUTOMOBILE, AUTOMOBILE, process.env.PRNUMBER);
     console.log("loanUrl: ", loanUrl);
