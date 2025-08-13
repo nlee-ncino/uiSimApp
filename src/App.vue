@@ -15,6 +15,11 @@
       </div>
 
       <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="streamLinedWorkflow" v-model="formData.streamLinedWorkflow" checked/>
+        <label class="form-check-label" for="streamLinedWorkflow">Enable Streamlined Workflow (Note: Doesn't do anything yet)</label>
+      </div>
+
+      <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="hasCoApplicant" v-model="formData.hasCoApplicant"/>
         <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant</label>
       </div>
@@ -219,7 +224,8 @@ export default {
         customUrl: '',
         batchUrls: '',
         prNumber: '',
-        prematureStop: ''
+        prematureStop: '',
+        streamLinedWorkflow: true
       },
       sections: {
         customUserInfo: false,
@@ -250,7 +256,8 @@ export default {
         zip: this.formData.zip,
         prNumber: this.formData.prNumber,
         failEligibility: this.formData.failEligibility,
-        prematureStop: this.formData.prematureStop
+        prematureStop: this.formData.prematureStop,
+        streamLinedWorkflow: this.formData.streamLinedWorkflow
       };
     },
     async runTests() {
