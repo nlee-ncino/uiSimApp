@@ -4,7 +4,7 @@ export const coappInfo = async (page: any) => {
     await page.getByRole('textbox', {name: 'Co-applicant first name'}).click();
     await page.waitForTimeout(500);
 
-    await page.getByRole('textbox', {name: 'Co-applicant first name'}).fill('Josh');
+    await page.getByRole('textbox', {name: 'Co-applicant first name'}).fill('NateCoapp');
     await page.waitForTimeout(500);
 
     await page.getByRole('textbox', {name: 'Co-applicant last name'}).click();

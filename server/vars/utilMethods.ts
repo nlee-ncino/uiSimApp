@@ -1,11 +1,6 @@
 export const generateRandomEmail = (): string => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let email = '';
-    for (let i = 0; i < 10; i++) {
-        email += chars[Math.floor(Math.random() * chars.length)];
-    }
-    email += '@gmail.com';
-    return email;
+    const randomNumber = Math.floor(10000000 + Math.random() * 90000000); // 8-digit number
+    return `nathaniel.lee+${randomNumber}@ncino.com`;
 };
 
 export const acceptDisclosures = async (page: any) => {

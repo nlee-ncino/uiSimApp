@@ -21,7 +21,7 @@
 
       <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="hasCoApplicant" v-model="formData.hasCoApplicant"/>
-        <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant</label>
+        <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant (email is Nathaniel.lee+{random_num}@ncino.com)</label>
       </div>
 
       <div class="form-group form-check">
