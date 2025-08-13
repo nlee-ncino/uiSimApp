@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "start": "concurrently \"npm run serve\" \"cd server && npm run dev\"",
+    "start": "npm run kill-server && concurrently \"npm run serve\" \"cd server && npm run dev\"",
     "kill-server": "sh -c 'kill -9 $(lsof -ti :4001)'"
   },
   "dependencies": {
