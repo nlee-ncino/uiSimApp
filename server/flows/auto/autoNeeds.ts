@@ -14,5 +14,7 @@ export const autoNeeds = async (page: any) => {
 
   await acceptDisclosures(page);
 
-  await page.getByRole("button", { name: "Save & Continue" }).click();
+  if (!(process.env.PREMATURESTOP === "loanNeeds")) {
+    await page.getByRole("button", { name: "Save & Continue" }).click();
+  }
 };

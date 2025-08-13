@@ -45,6 +45,8 @@ export const incomeNew = async (page: any) => {
     .click();
   await page.waitForTimeout(200);
 
-  await page.getByRole("button", { name: "Save & Continue" }).click();
-  await page.waitForTimeout(200);
+  if (!(process.env.PREMATURESTOP === "income")) {
+    await page.getByRole("button", { name: "Save & Continue" }).click();
+    await page.waitForTimeout(200);
+  }
 };

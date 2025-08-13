@@ -26,8 +26,10 @@ export const coappInfo = async (page: any) => {
     await page.getByRole('textbox', {name: 'Co-applicant email'}).fill(randomEmail);
     await page.waitForTimeout(500);
 
-    await page.getByRole('button', {name: 'Save & Continue'}).click();
-    await page.waitForTimeout(500);
+    if (!(process.env.PREMATURESTOP === "coApp")) {
+        await page.getByRole('button', {name: 'Save & Continue'}).click();
+        await page.waitForTimeout(500);
+    }
 }
 
 

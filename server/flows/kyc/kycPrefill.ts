@@ -9,6 +9,8 @@ export const kycPrefill = async (page: any) => {
 
     await acceptDisclosures(page);
 
-    await page.getByRole("button", {name: "Save & Continue"}).click();
-    await page.waitForTimeout(200);
+    if (!(process.env.PREMATURESTOP === "kyc")) {
+        await page.getByRole("button", {name: "Save & Continue"}).click();
+        await page.waitForTimeout(200);
+    }
 };

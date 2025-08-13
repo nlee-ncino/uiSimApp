@@ -23,6 +23,8 @@ export const productSelection = async (page: any, hasCoapplicant: string | undef
 
     //todo need one most likely for loan officer when that goes out (possibly if branch selector is visible?)
 
-    await page.getByRole("button", {name: "Save & Continue"}).click();
-    await page.waitForTimeout(500);
+    if (!(process.env.PREMATURESTOP === "productSelection")) {
+        await page.getByRole("button", {name: "Save & Continue"}).click();
+        await page.waitForTimeout(500);
+    }
 };

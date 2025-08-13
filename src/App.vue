@@ -99,6 +99,29 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <a class="d-flex align-items-center" @click="toggleSection('prematureStop')"
+           style="color: black; text-decoration: none; cursor: pointer;">
+          <span class="mr-2">{{ sections.prematureStop ? '▼' : '▶' }}</span>
+          Stop Flow Early
+        </a>
+      </div>
+
+      <div class="mt-3" v-if="sections.prematureStop">
+        <label for="prematureStop">Select Stop Page:</label>
+        <select class="form-control" id="prematureStop" v-model="formData.prematureStop">
+          <option value="login">Login Page</option>
+          <option value="eligibility">Eligibility Page</option>
+          <option value="productSelection">Product Selection Page</option>
+          <option value="kyc">KYC Page</option>
+          <option value="income">Income Page</option>
+          <option value="demographics">Demographics Page</option>
+          <option value="coApp">Coapp Info Page</option>
+          <option value="loanDetails">Loan Details Page</option>
+          <option value="loanNeeds">Loan Needs Page</option>
+        </select>
+      </div>
+
       <div><strong>* URL Priority is as follows: Batch Urls -> Custom Url -> Environment.</strong></div>
       <div>Leave the higher priority fields empty to use the lower priority fields.</div>
 
@@ -195,11 +218,13 @@ export default {
         environmentType: 'local',
         customUrl: '',
         batchUrls: '',
-        prNumber: ''
+        prNumber: '',
+        prematureStop: ''
       },
       sections: {
         customUserInfo: false,
-        customKyc: false
+        customKyc: false,
+        prematureStop: false
       },
       output: ''
     }
@@ -224,7 +249,8 @@ export default {
         city: this.formData.city,
         zip: this.formData.zip,
         prNumber: this.formData.prNumber,
-        failEligibility: this.formData.failEligibility
+        failEligibility: this.formData.failEligibility,
+        prematureStop: this.formData.prematureStop
       };
     },
     async runTests() {

@@ -84,7 +84,8 @@ app.post('/run-tests', async (req) => {
             city,
             zip,
             prNumber,
-            failEligibility
+            failEligibility,
+            prematureStop
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
@@ -103,6 +104,7 @@ app.post('/run-tests', async (req) => {
             zip,
             prNumber,
             failEligibility,
+            prematureStop,
             path
         })
         console.log('Running test command:', testCommand);
@@ -131,7 +133,8 @@ app.post('/run-tests-batch', async (req) => {
             city,
             zip,
             prNumber,
-            failEligibility
+            failEligibility,
+            prematureStop,
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
@@ -152,6 +155,7 @@ app.post('/run-tests-batch', async (req) => {
                 zip,
                 prNumber,
                 failEligibility,
+                prematureStop,
                 path
             }, true) // Pass true for isBatch parameter
             console.log(`Running test command for ${envUrl}:`, testCommand);

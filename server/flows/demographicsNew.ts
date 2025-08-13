@@ -8,6 +8,8 @@ export const demographicsNew = async (page: any) => {
     await page.getByRole('checkbox', {name: 'Male', exact: true}).check();
     await page.waitForTimeout(200);
 
-    await page.getByRole('button', {name: 'Save & Continue'}).click();
-    await page.waitForTimeout(200);
+    if (!(process.env.PREMATURESTOP === "demographics")) {
+        await page.getByRole('button', {name: 'Save & Continue'}).click();
+        await page.waitForTimeout(200);
+    }
 };
