@@ -6,15 +6,8 @@ export const kycNewPartial = async (page: any) => {
     await page.getByRole("textbox", {name: "mm/dd/yyyy"}).fill(dob);
     await page.waitForTimeout(200);
 
-    await page
-        .getByRole("textbox", {name: /social security/i})
-        .click();
-    await page.waitForTimeout(200);
-
     const ssn = process.env.SSN ? process.env.SSN : "666-00-1234";
-
-    await page
-        .getByRole("textbox", {name: /social security/i})
+    await page.getByTestId('ssn-identification-number-field-input')
         .fill(ssn);
 
     await page.waitForTimeout(200);
@@ -60,10 +53,13 @@ export const kycNewPartial = async (page: any) => {
     await page.getByRole("radio", {name: "Driver's license"}).check();
     await page.waitForTimeout(200);
 
-    await page.getByRole("textbox", {name: "ID number"}).click();
+    await page.getByTestId('identification_number-identification-number-field').locator('input').click();
     await page.waitForTimeout(200);
-
-    await page.getByRole("textbox", {name: "ID number"}).fill("a123443");
+    
+    // Clear the field first, then fill it
+    await page.getByTestId('identification_number-identification-number-field').locator('input').clear();
+    await page.waitForTimeout(200);
+    await page.getByTestId('identification_number-identification-number-field').locator('input').pressSequentially("a123443");
     await page.waitForTimeout(200);
 
     await page
