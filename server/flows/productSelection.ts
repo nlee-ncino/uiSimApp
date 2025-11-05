@@ -13,7 +13,7 @@ export const productSelection = async (page: any, hasCoapplicant: string | undef
         await page.waitForTimeout(500);
     }
 
-    const branchSelector = await page.getByRole("textbox", {name: "Which branch would you like"});
+    const branchSelector = await page.getByRole("textbox", {name: "Which branch would you like to work with?"});
     if (await branchSelector.isVisible()) {
         await branchSelector.click();
         await branchSelector.fill("Online");
