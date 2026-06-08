@@ -1,9 +1,9 @@
 export const kycNewPartial = async (page: any) => {
-    await page.getByRole("textbox", {name: "mm/dd/yyyy"}).click();
-    await page.waitForTimeout(200);
+    // await page.getByRole("textbox", {name: "mm/dd/yyyy"}).click();
+    // await page.waitForTimeout(200);
 
     const dob = process.env.DOB ? process.env.DOB : "12/12/2000";
-    await page.getByRole("textbox", {name: "mm/dd/yyyy"}).fill(dob);
+    await page.locator('input[data-cy="dob-field"]').fill(dob);
     await page.waitForTimeout(200);
 
     const ssn = process.env.SSN ? process.env.SSN : "666-00-1234";
@@ -77,15 +77,15 @@ export const kycNewPartial = async (page: any) => {
         .press("Enter");
     await page.waitForTimeout(200);
 
-    await page.locator("#identification_issue_date").click();
+    await page.locator('input[data-cy="identification_issue_date-field"]').click();
     await page.waitForTimeout(200);
 
-    await page.locator("#identification_issue_date").fill("12/12/2000");
+    await page.locator('input[data-cy="identification_issue_date-field"]').fill("12/12/2000");
     await page.waitForTimeout(200);
 
-    await page.locator("#identification_expiration_date").click();
+    await page.locator('input[data-cy="identification_expiration_date-field"]').click();
     await page.waitForTimeout(200);
 
-    await page.locator("#identification_expiration_date").fill("12/12/2070");
+    await page.locator('input[data-cy="identification_expiration_date-field"]').fill("12/12/2070");
     await page.waitForTimeout(200);
 };
