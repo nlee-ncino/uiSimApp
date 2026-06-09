@@ -88,15 +88,81 @@
       </div>
 
       <div class="form-group">
+        <label for="companyType">Company Type:</label>
+        <select class="form-control" id="companyType" v-model="formData.companyType" @change="onCompanyTypeChange" required>
+          <option value="consumer">Consumer</option>
+          <option value="business">Business</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label for="testType">Select Test Type:</label>
         <select class="form-control" id="testType" v-model="formData.testType" required>
-          <option value="loanToKYC">Unsecured Loan To KYC</option>
-          <option value="unsecuredTerm">Unsecured Term Loan</option>
-          <option value="letterOfCredit">Letter of Credit</option>
-          <option value="auto">Used Auto Loan</option>
-          <option value="heloc">HELOC (Home Equity Line of Credit)</option>
-          <option value="creditCard">Credit Card</option>
+          <template v-if="formData.companyType === 'consumer'">
+            <option value="loanToKYC">Unsecured Loan To KYC</option>
+            <option value="unsecuredTerm">Unsecured Term Loan</option>
+            <option value="letterOfCredit">Letter of Credit</option>
+            <option value="auto">Used Auto Loan</option>
+            <option value="heloc">HELOC (Home Equity Line of Credit)</option>
+            <option value="creditCard">Credit Card</option>
+          </template>
+          <template v-else>
+            <option value="businessDeposit">Business Deposit</option>
+          </template>
         </select>
+      </div>
+
+      <!-- Business Info Section -->
+      <div class="form-group" v-if="formData.companyType === 'business'">
+        <a class="d-flex align-items-center" @click="toggleSection('customBusiness')"
+           style="color: black; text-decoration: none; cursor: pointer;">
+          <span class="mr-2">{{ sections.customBusiness ? '▼' : '▶' }}</span>
+          Customize Business Info
+        </a>
+      </div>
+
+      <div class="mt-3" v-if="formData.companyType === 'business' && sections.customBusiness">
+        <div class="form-group">
+          <label for="businessName">Business Name: <span class="text-muted">Default is Acme Test LLC</span></label>
+          <input type="text" class="form-control" id="businessName" v-model="formData.businessName"/>
+        </div>
+        <div class="form-group">
+          <label for="businessEntityType">Entity Type:</label>
+          <select class="form-control" id="businessEntityType" v-model="formData.businessEntityType">
+            <option value="llc">LLC</option>
+            <option value="corporation">Corporation</option>
+            <option value="partnership">Partnership</option>
+            <option value="sole proprietorship">Sole Proprietorship</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="businessEin">EIN: <span class="text-muted">Default is 12-3456789</span></label>
+          <input type="text" class="form-control" id="businessEin" v-model="formData.businessEin"/>
+        </div>
+        <div class="form-group">
+          <label for="businessPhone">Business Phone: <span class="text-muted">Default is (234) 242-3423</span></label>
+          <input type="text" class="form-control" id="businessPhone" v-model="formData.businessPhone"/>
+        </div>
+        <div class="form-group">
+          <label for="businessIncorporationDate">Incorporation Date: <span class="text-muted">Default is 01/01/2010</span></label>
+          <input type="text" class="form-control" id="businessIncorporationDate" v-model="formData.businessIncorporationDate"/>
+        </div>
+        <div class="form-group">
+          <label for="businessAddress">Business Address: <span class="text-muted">Default is 200201 Test Rd</span></label>
+          <input type="text" class="form-control" id="businessAddress" v-model="formData.businessAddress"/>
+        </div>
+        <div class="form-group">
+          <label for="businessCity">Business City: <span class="text-muted">Default is Fantasy Island</span></label>
+          <input type="text" class="form-control" id="businessCity" v-model="formData.businessCity"/>
+        </div>
+        <div class="form-group">
+          <label for="businessState">Business State: <span class="text-muted">Default is NC (2-letter code)</span></label>
+          <input type="text" class="form-control" id="businessState" v-model="formData.businessState"/>
+        </div>
+        <div class="form-group">
+          <label for="businessZip">Business Zip: <span class="text-muted">Default is 60750</span></label>
+          <input type="text" class="form-control" id="businessZip" v-model="formData.businessZip"/>
+        </div>
       </div>
 
       <div class="form-group">
@@ -110,15 +176,25 @@
       <div class="mt-3" v-if="sections.prematureStop">
         <label for="prematureStop">Select Stop Page:</label>
         <select class="form-control" id="prematureStop" v-model="formData.prematureStop">
+          <!-- Shared -->
           <option value="login">Login Page</option>
-          <option value="eligibility">Eligibility Page</option>
           <option value="productSelection">Product Selection Page</option>
-          <option value="kyc">KYC Page</option>
-          <option value="income">Income Page</option>
-          <option value="demographics">Demographics Page</option>
-          <option value="coApp">Coapp Info Page</option>
-          <option value="loanDetails">Loan Details Page</option>
-          <option value="loanNeeds">Loan Needs Page</option>
+          <!-- Consumer-only -->
+          <template v-if="formData.companyType === 'consumer'">
+            <option value="eligibility">Eligibility Page</option>
+            <option value="kyc">KYC Page</option>
+            <option value="income">Income Page</option>
+            <option value="demographics">Demographics Page</option>
+            <option value="coApp">Coapp Info Page</option>
+            <option value="loanDetails">Loan Details Page</option>
+            <option value="loanNeeds">Loan Needs Page</option>
+          </template>
+          <!-- Business-only -->
+          <template v-else>
+            <option value="businessInfo">Business Info Page</option>
+            <option value="businessYourInfo">Business Your Info Page</option>
+            <option value="businessYourInfoAddress">Business Your Info Address Page</option>
+          </template>
         </select>
       </div>
 
@@ -203,6 +279,7 @@ export default {
       formData: {
         email: '',
         password: '',
+        companyType: 'consumer',
         testType: 'loanToKYC',
         firstName: '',
         lastName: '',
@@ -219,11 +296,21 @@ export default {
         customUrl: '',
         batchUrls: '',
         prNumber: '',
-        prematureStop: ''
+        prematureStop: '',
+        businessName: '',
+        businessEntityType: 'llc',
+        businessEin: '',
+        businessPhone: '',
+        businessIncorporationDate: '',
+        businessAddress: '',
+        businessCity: '',
+        businessState: '',
+        businessZip: ''
       },
       sections: {
         customUserInfo: false,
         customKyc: false,
+        customBusiness: false,
         prematureStop: false
       },
       output: ''
@@ -232,6 +319,10 @@ export default {
   methods: {
     toggleSection(section) {
       this.sections[section] = !this.sections[section];
+    },
+    onCompanyTypeChange() {
+      this.formData.testType = this.formData.companyType === 'business' ? 'businessDeposit' : 'loanToKYC';
+      this.formData.prematureStop = '';
     },
     getBasePayload() {
       return {
@@ -250,7 +341,16 @@ export default {
         zip: this.formData.zip,
         prNumber: this.formData.prNumber,
         failEligibility: this.formData.failEligibility,
-        prematureStop: this.formData.prematureStop
+        prematureStop: this.formData.prematureStop,
+        businessName: this.formData.businessName,
+        businessEntityType: this.formData.businessEntityType,
+        businessEin: this.formData.businessEin,
+        businessPhone: this.formData.businessPhone,
+        businessIncorporationDate: this.formData.businessIncorporationDate,
+        businessAddress: this.formData.businessAddress,
+        businessCity: this.formData.businessCity,
+        businessState: this.formData.businessState,
+        businessZip: this.formData.businessZip
       };
     },
     async runTests() {

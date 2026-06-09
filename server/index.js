@@ -42,6 +42,8 @@ const getUrlPath = (testType, isPrefill) => {
         } else {
             path = "tests/new_user/newCreditCard.spec.ts";
         }
+    } else if (testType === "businessDeposit") {
+        path = "tests/new_user/newBusinessDeposit.spec.ts";
     }
     return path;
 };
@@ -85,7 +87,16 @@ app.post('/run-tests', async (req) => {
             zip,
             prNumber,
             failEligibility,
-            prematureStop
+            prematureStop,
+            businessName,
+            businessEntityType,
+            businessEin,
+            businessPhone,
+            businessIncorporationDate,
+            businessAddress,
+            businessCity,
+            businessState,
+            businessZip
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
@@ -105,6 +116,15 @@ app.post('/run-tests', async (req) => {
             prNumber,
             failEligibility,
             prematureStop,
+            businessName,
+            businessEntityType,
+            businessEin,
+            businessPhone,
+            businessIncorporationDate,
+            businessAddress,
+            businessCity,
+            businessState,
+            businessZip,
             path
         })
         console.log('Running test command:', testCommand);
@@ -134,7 +154,16 @@ app.post('/run-tests-batch', async (req) => {
             zip,
             prNumber,
             failEligibility,
-            prematureStop
+            prematureStop,
+            businessName,
+            businessEntityType,
+            businessEin,
+            businessPhone,
+            businessIncorporationDate,
+            businessAddress,
+            businessCity,
+            businessState,
+            businessZip
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
@@ -156,6 +185,15 @@ app.post('/run-tests-batch', async (req) => {
                 prNumber,
                 failEligibility,
                 prematureStop,
+                businessName,
+                businessEntityType,
+                businessEin,
+                businessPhone,
+                businessIncorporationDate,
+                businessAddress,
+                businessCity,
+                businessState,
+                businessZip,
                 path
             }, true) // Pass true for isBatch parameter
             console.log(`Running test command for ${envUrl}:`, testCommand);
