@@ -23,4 +23,8 @@ pnpm-debug.log*
 *.sw?
 # npm lock file
 package-lock.json
+server/package-lock.json
+server/playwright-report
+server/test-results
+server/temp-profile
 test-results/*

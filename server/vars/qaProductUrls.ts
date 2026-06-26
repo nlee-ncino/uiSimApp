@@ -1,0 +1,11 @@
+export const CD_6_MO = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askWAAQ";
+export const GOLD_CHECKING = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askTAAQ";
+export const GOLD_SAVINGS = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askbAAA";
+export const ADJUSTABLE_RATE_MORTGAGE = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0udq000001Sb7OAAS";
+export const HOME_EQUITY_LINE_OF_CREDIT = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0udq000001RyPJAA0";
+export const HELOC = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004asl0AAA";
+export const HOME_EQUITY_TERM = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004asl1AAA";
+export const PURCHASE = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0udq000001TsJ0AAK";
+export const CASH_REWARDS_CREDIT_CARD = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askzAAA";
+export const AUTOMOBILE = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askqAAA";
+export const UNSECURED_LOAN = "https://cdxp.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao000004askpAAA";
