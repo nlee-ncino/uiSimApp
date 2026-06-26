@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "all": "npm run kill-server && concurrently \"npm run serve\" \"cd server && npm run dev\"",
     "serve": "vue-cli-service serve",
-    "kill-server": "sh -c 'PID=$(lsof -ti :4001); if [ -n \"$PID\" ]; then kill -9 $PID; fi'"
+    "build": "vue-cli-service build"
   },
   "dependencies": {
     "@playwright/test": "^1.53.1",
