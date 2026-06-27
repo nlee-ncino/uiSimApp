@@ -82,11 +82,13 @@ export const kycNewPartial = async (page: any) => {
     await page.waitForTimeout(200);
 
     await page.locator('input[data-cy="identification_issue_date-field"]').fill("12/12/2000");
+    await page.keyboard.press("Escape");
     await page.waitForTimeout(200);
 
     await page.locator('input[data-cy="identification_expiration_date-field"]').click();
     await page.waitForTimeout(200);
 
-    await page.locator('input[data-cy="identification_expiration_date-field"]').fill("12/12/2070");
+    await page.locator('input[data-cy="identification_expiration_date-field"]').fill("12/12/2030");
+    await page.keyboard.press("Escape");
     await page.waitForTimeout(200);
 };
