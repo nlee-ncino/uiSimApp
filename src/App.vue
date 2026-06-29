@@ -94,6 +94,47 @@
 
       <div class="mt-3" v-if="sections.customKyc">
         <div class="form-group">
+          <label for="citizenshipStatus">Citizenship Status:</label>
+          <select class="form-control" id="citizenshipStatus" v-model="formData.citizenshipStatus">
+            <option value="citizen">U.S. Citizen</option>
+            <option value="permanentResident">U.S. Permanent Resident</option>
+            <option value="nonResident">Non-U.S. Citizen (NRA)</option>
+          </select>
+        </div>
+
+        <!-- Permanent resident sub-form -->
+        <div v-if="formData.citizenshipStatus === 'permanentResident'">
+          <div class="form-group">
+            <label for="countryOfCitizenship">Country of Citizenship: <span class="text-muted">Default is AF - Afghanistan</span></label>
+            <input type="text" class="form-control" id="countryOfCitizenship" v-model="formData.countryOfCitizenship"/>
+          </div>
+          <div class="form-group">
+            <label for="residencyIssueDate">Residency Issue Date: <span class="text-muted">Default is 01/01/2020</span></label>
+            <input type="text" class="form-control" id="residencyIssueDate" v-model="formData.residencyIssueDate"/>
+          </div>
+          <div class="form-group">
+            <label for="residencyEntryDate">Residency Date of Entry: <span class="text-muted">Default is 01/01/2020</span></label>
+            <input type="text" class="form-control" id="residencyEntryDate" v-model="formData.residencyEntryDate"/>
+          </div>
+          <div class="form-group">
+            <label for="residentNumber">Resident Number: <span class="text-muted">Default is a random 9-digit number</span></label>
+            <input type="text" class="form-control" id="residentNumber" v-model="formData.residentNumber"/>
+          </div>
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="residentHasSsn" v-model="formData.residentHasSsn"/>
+            <label class="form-check-label" for="residentHasSsn">Permanent resident has an SSN (uncheck for no SSN; SSN field is skipped)</label>
+          </div>
+        </div>
+
+        <!-- NRA only needs country of citizenship -->
+        <div v-if="formData.citizenshipStatus === 'nonResident'">
+          <div class="form-group">
+            <label for="countryOfCitizenshipNra">Country of Citizenship: <span class="text-muted">Default is AF - Afghanistan</span></label>
+            <input type="text" class="form-control" id="countryOfCitizenshipNra" v-model="formData.countryOfCitizenship"/>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="dob">Date of Birth: <span class="text-muted">Default is 12/12/2000</span></label>
           <input type="text" class="form-control" id="dob" v-model="formData.dob"/>
         </div>
@@ -312,6 +353,12 @@ export default {
         firstName: '',
         lastName: '',
         phone: '',
+        citizenshipStatus: 'citizen',
+        countryOfCitizenship: '',
+        residencyIssueDate: '',
+        residencyEntryDate: '',
+        residentNumber: '',
+        residentHasSsn: true,
         dob: '',
         ssn: '',
         address: '',
@@ -371,6 +418,12 @@ export default {
         firstName: this.formData.firstName,
         lastName: this.formData.lastName,
         phone: this.formData.phone,
+        citizenshipStatus: this.formData.citizenshipStatus,
+        countryOfCitizenship: this.formData.countryOfCitizenship,
+        residencyIssueDate: this.formData.residencyIssueDate,
+        residencyEntryDate: this.formData.residencyEntryDate,
+        residentNumber: this.formData.residentNumber,
+        residentHasSsn: this.formData.residentHasSsn,
         dob: this.formData.dob,
         ssn: this.formData.ssn,
         address: this.formData.address,

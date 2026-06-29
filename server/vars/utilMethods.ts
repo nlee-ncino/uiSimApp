@@ -3,6 +3,10 @@ export const generateRandomEmail = (): string => {
     return `nathaniel.lee+${randomNumber}@ncino.com`;
 };
 
+export const generateRandomResidentNumber = (): string => {
+    return Math.floor(100000000 + Math.random() * 900000000).toString(); // 9-digit number
+};
+
 export const acceptDisclosures = async (page: any) => {
     // If we're on an intermediate page (e.g. Evaluating_eligibility), wait for the URL
     // to settle on the real destination before looking for disclosures.
