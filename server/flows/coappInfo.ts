@@ -1,29 +1,33 @@
-import {generateRandomEmail} from "../vars/utilMethods";
+import {formatPhoneNumber, generateRandomEmail} from "../vars/utilMethods";
 
 export const coappInfo = async (page: any) => {
+    const firstName = process.env.COAPPFIRSTNAME || 'NateCoapp';
+    const lastName = process.env.COAPPLASTNAME || 'Pass';
+    const phone = process.env.COAPPPHONE ? formatPhoneNumber(process.env.COAPPPHONE) : '(111) 111-1111';
+    const email = process.env.COAPPEMAIL || generateRandomEmail();
+
     await page.getByRole('textbox', {name: 'Co-applicant first name'}).click();
     await page.waitForTimeout(500);
 
-    await page.getByRole('textbox', {name: 'Co-applicant first name'}).fill('NateCoapp');
+    await page.getByRole('textbox', {name: 'Co-applicant first name'}).fill(firstName);
     await page.waitForTimeout(500);
 
     await page.getByRole('textbox', {name: 'Co-applicant last name'}).click();
     await page.waitForTimeout(500);
 
-    await page.getByRole('textbox', {name: 'Co-applicant last name'}).fill('Pass');
+    await page.getByRole('textbox', {name: 'Co-applicant last name'}).fill(lastName);
     await page.waitForTimeout(500);
 
     await page.getByRole('textbox', {name: '(___) ___-____'}).click();
     await page.waitForTimeout(500);
 
-    await page.getByRole('textbox', {name: '(___) ___-____'}).fill('(111) 111-1111');
+    await page.getByRole('textbox', {name: '(___) ___-____'}).fill(phone);
     await page.waitForTimeout(500);
 
     await page.getByRole('textbox', {name: 'Co-applicant email'}).click();
     await page.waitForTimeout(500);
 
-    const randomEmail = generateRandomEmail();
-    await page.getByRole('textbox', {name: 'Co-applicant email'}).fill(randomEmail);
+    await page.getByRole('textbox', {name: 'Co-applicant email'}).fill(email);
     await page.waitForTimeout(500);
 
     if ((process.env.PREMATURESTOP === "coApp")) {

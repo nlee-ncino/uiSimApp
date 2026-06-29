@@ -19,6 +19,34 @@
         <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant (email is Nathaniel.lee+{random_num}@ncino.com)</label>
       </div>
 
+      <!-- Co-Applicant Info Section -->
+      <div class="form-group" v-if="formData.hasCoApplicant">
+        <a class="d-flex align-items-center" @click="toggleSection('customCoApp')"
+           style="color: black; text-decoration: none; cursor: pointer;">
+          <span class="mr-2">{{ sections.customCoApp ? '▼' : '▶' }}</span>
+          Customize Co-Applicant Info
+        </a>
+      </div>
+
+      <div class="mt-3" v-if="formData.hasCoApplicant && sections.customCoApp">
+        <div class="form-group">
+          <label for="coappFirstName">Co-Applicant First Name: <span class="text-muted">Default is NateCoapp</span></label>
+          <input type="text" class="form-control" id="coappFirstName" v-model="formData.coappFirstName"/>
+        </div>
+        <div class="form-group">
+          <label for="coappLastName">Co-Applicant Last Name: <span class="text-muted">Default is Pass</span></label>
+          <input type="text" class="form-control" id="coappLastName" v-model="formData.coappLastName"/>
+        </div>
+        <div class="form-group">
+          <label for="coappPhone">Co-Applicant Phone: <span class="text-muted">Default is (111) 111-1111</span></label>
+          <input type="text" class="form-control" id="coappPhone" v-model="formData.coappPhone"/>
+        </div>
+        <div class="form-group">
+          <label for="coappEmail">Co-Applicant Email: <span class="text-muted">Default is a random Nathaniel.lee+{random_num}@ncino.com</span></label>
+          <input type="text" class="form-control" id="coappEmail" v-model="formData.coappEmail"/>
+        </div>
+      </div>
+
       <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="failEligibility" v-model="formData.failEligibility"/>
         <label class="form-check-label" for="failEligibility">Fail eligibility</label>
@@ -291,6 +319,10 @@ export default {
         zip: '',
         isPrefill: false,
         hasCoApplicant: false,
+        coappFirstName: '',
+        coappLastName: '',
+        coappPhone: '',
+        coappEmail: '',
         failEligibility: false,
         environmentType: 'local',
         customUrl: '',
@@ -309,6 +341,7 @@ export default {
       },
       sections: {
         customUserInfo: false,
+        customCoApp: false,
         customKyc: false,
         customBusiness: false,
         prematureStop: false
@@ -331,6 +364,10 @@ export default {
         testType: this.formData.testType,
         isPrefill: this.formData.isPrefill,
         hasCoApplicant: this.formData.hasCoApplicant,
+        coappFirstName: this.formData.coappFirstName,
+        coappLastName: this.formData.coappLastName,
+        coappPhone: this.formData.coappPhone,
+        coappEmail: this.formData.coappEmail,
         firstName: this.formData.firstName,
         lastName: this.formData.lastName,
         phone: this.formData.phone,
