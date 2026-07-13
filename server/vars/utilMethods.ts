@@ -61,8 +61,15 @@ export const acceptDisclosures = async (page: any) => {
 
     await page.waitForTimeout(1000);
 
-    // Handle traditional consent checkboxes.
-    for (const checkbox of await checkboxLocator.all()) {
+    // Handle traditional consent checkboxes. Click ONLY [data-cy="consent-checkbox"] when
+    // present — the ripple span lives inside that same control, so clicking both toggles the
+    // checkbox twice (check then uncheck). Fall back to the ripple only for legacy Vuetify
+    // pages that have no consent-checkbox.
+    const consentCheckboxes = page.locator('[data-cy="consent-checkbox"]');
+    const checkboxes = (await consentCheckboxes.count()) > 0
+        ? consentCheckboxes
+        : page.locator('.v-input--selection-controls__ripple');
+    for (const checkbox of await checkboxes.all()) {
         if (await checkbox.isVisible()) {
             await checkbox.click({delay: 500, force: true});
         }
