@@ -11,27 +11,36 @@ export const businessInfo = async (page: any) => {
     const businessState = process.env.BUSINESSSTATE || 'NC';
     const businessZip = process.env.BUSINESSZIP || '60750';
 
-    // Basic Details — Entity Type selection (card buttons or dropdown)
+    // Basic Details — Entity Type selection. This page renders either as a Vuetify dropdown
+    // or as card buttons; the dropdown can take a moment to mount after transitioning in from
+    // product selection. Race the two over 30s (omni's pattern) rather than assuming cards
+    // after a short dropdown timeout — otherwise we hang clicking a card that never exists.
     const dropdown = page.getByRole('combobox', {name: 'Entity Type'});
-    const isDropdown = await dropdown.isVisible({timeout: 5000}).catch(() => false);
-
-    const valueMap: Record<string, string> = {
+    const cardMap: Record<string, string> = {
         corporation: 'Corporation',
-        llc: 'Limited Liability Company',
+        llc: 'Limited Liability Company (LLC)',
         partnership: 'Partnership',
-        'sole proprietorship': 'Sole Proprietorship - Business'
+        'sole proprietorship': 'Sole Proprietorship'
     };
+    const cardButton = page.locator(
+        Object.values(cardMap).map((label) => `[data-cy="${label}"]`).join(', ')
+    ).first();
 
-    if (isDropdown) {
+    const firstVisible = await Promise.race([
+        dropdown.waitFor({state: 'visible', timeout: 30000}).then(() => 'dropdown'),
+        cardButton.waitFor({state: 'visible', timeout: 30000}).then(() => 'cards')
+    ]).catch(() => 'none');
+
+    if (firstVisible === 'dropdown') {
+        const valueMap: Record<string, string> = {
+            corporation: 'Corporation',
+            llc: 'Limited Liability Company',
+            partnership: 'Partnership',
+            'sole proprietorship': 'Sole Proprietorship - Business'
+        };
         const value = valueMap[entityType.toLowerCase()];
         if (value) await dropdown.selectOption({value});
-    } else {
-        const cardMap: Record<string, string> = {
-            corporation: 'Corporation',
-            llc: 'Limited Liability Company (LLC)',
-            partnership: 'Partnership',
-            'sole proprietorship': 'Sole Proprietorship'
-        };
+    } else if (firstVisible === 'cards') {
         const cardLabel = cardMap[entityType.toLowerCase()];
         if (cardLabel) {
             await page.locator(`[data-cy="${cardLabel}"]`).click({timeout: 30000});
