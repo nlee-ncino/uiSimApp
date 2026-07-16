@@ -157,26 +157,6 @@ export const acceptDisclosures = async (page: any) => {
     }
 }
 
-export const getLoanUrl = async (environment: string | undefined, omniQaURL: string, localURL: string, prNumber: string) => {
-    let loanUrl: string;
-    if (environment === "omniQA") {
-        loanUrl = omniQaURL;
-    } else if (environment === "local") {
-        loanUrl = localURL;
-    } else if (environment === "localQA") {
-        loanUrl = convertQaUrlToLocalUrl(omniQaURL);
-    } else if (environment === "feature" && prNumber && prNumber.length > 0) {
-        loanUrl = convertQaUrlToFeatureUrl(omniQaURL, prNumber);
-    } else if (environment) {
-        loanUrl = environment;
-    } else {
-        console.log("Environment not set correctly: defaulting to omniQA");
-        loanUrl = omniQaURL;
-    }
-    return loanUrl;
-}
-
-
 /**
  * Formats a phone number to (XXX) XXX-XXXX.
  * If too short, pads with '4'. If too long, trims to 10 digits.
@@ -198,18 +178,5 @@ export function formatPhoneNumber(raw: string): string {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-export function convertQaUrlToFeatureUrl(url: string, prNumber: string): string {
-    const qaDomain = "custom6.omni.us.qa.api.ncino.com";
-    const featureDomain = `custom6.cipr${prNumber}.ci.ncino.cloud`;
-
-    return url.replace(qaDomain, featureDomain);
-}
-
-export function convertQaUrlToLocalUrl(url: string): string {
-    const qaDomain = "https://custom6.omni-qa.ncino.com";
-    const localDomain = "http://localhost:3000";
-
-    return url.replace(qaDomain, localDomain);
-}
 
 

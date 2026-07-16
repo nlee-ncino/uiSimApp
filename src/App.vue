@@ -267,8 +267,8 @@
         </select>
       </div>
 
-      <div><strong>* URL Priority is as follows: Batch Urls -> Custom Url -> Environment.</strong></div>
-      <div>Leave the higher priority fields empty to use the lower priority fields.</div>
+      <div><strong>* URL Priority is as follows: Batch Urls -> Custom Url.</strong></div>
+      <div>Leave the higher priority field empty to use the lower priority field.</div>
 
       <!-- URL Section -->
       <div class="form-group">
@@ -299,30 +299,6 @@ Unsecured Loan	https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?p
                     v-model="formData.customUrl"
                     placeholder="https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSJAA2"
                 />
-              </div>
-            </b-tab>
-            <b-tab title="Environment">
-              <div class="form-group">
-                <label for="environmentType">Default Environment:</label>
-                <select
-                    class="form-control"
-                    id="environmentType"
-                    v-model="formData.environmentType"
-                    required
-                >
-                  <option value="local" selected>Local Environment to Local Salesforce</option>
-                  <option value="localQA">Local Environment to QA Salesforce</option>
-                  <option value="omniQA">Omni QA (CB22) Environment</option>
-                  <option value="feature">Feature Environment (please enter pr number on next tab if using this)
-                  </option>
-                </select>
-              </div>
-            </b-tab>
-            <b-tab title="PR Number">
-              <div class="form-group">
-                <label for="prNumber">PR Number: (Enter when selecting feature environment or nothing happens ->
-                  ex.1120)</label>
-                <input type="text" class="form-control" id="prNumber" v-model="formData.prNumber"/>
               </div>
             </b-tab>
           </b-tabs>
@@ -371,10 +347,8 @@ export default {
         coappPhone: '',
         coappEmail: '',
         failEligibility: false,
-        environmentType: 'local',
         customUrl: '',
         batchUrls: '',
-        prNumber: '',
         prematureStop: '',
         businessName: '',
         businessEntityType: 'llc',
@@ -429,7 +403,6 @@ export default {
         address: this.formData.address,
         city: this.formData.city,
         zip: this.formData.zip,
-        prNumber: this.formData.prNumber,
         failEligibility: this.formData.failEligibility,
         prematureStop: this.formData.prematureStop,
         businessName: this.formData.businessName,
@@ -464,16 +437,10 @@ export default {
 
           this.output = await response.text();
         } else {
-          // Use customUrl if it's not empty, otherwise use the dropdown value
-          const environmentType =
-              this.formData.customUrl.trim() !== ''
-                  ? this.formData.customUrl
-                  : this.formData.environmentType;
-
           const payload = this.getBasePayload();
           this.$log.info('payload', payload);
 
-          payload.environmentType = environmentType;
+          payload.environmentType = this.formData.customUrl;
 
           const response = await fetch(serverUrl + "/run-tests", {
             method: "POST",

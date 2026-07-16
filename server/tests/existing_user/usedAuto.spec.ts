@@ -4,17 +4,14 @@ import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
 import {kycPrefill} from "../../flows/kyc/kycPrefill";
 import {incomePrefill} from "../../flows/income/incomePrefill";
-import {AUTOMOBILE} from "../../vars/localProductUrls";
 import {autoDetails} from "../../flows/auto/autoDetails";
 import {autoNeeds} from "../../flows/auto/autoNeeds";
-import {AUTOMOBILE as QA_AUTOMOBILE} from "../../vars/qaProductUrls";
-import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("usedAuto", async ({page}) => {
     test.setTimeout(0);
 
-    const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, QA_AUTOMOBILE, AUTOMOBILE, process.env.PRNUMBER);
+    const loanUrl = process.env.ENVIRONMENT;
     console.log("loanUrl: ", loanUrl);
 
     await loginPrefill(page, loanUrl);

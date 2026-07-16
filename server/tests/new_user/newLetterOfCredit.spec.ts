@@ -1,10 +1,7 @@
 import {test} from '../testSetup';
 import {eligibility} from "../../flows/eligibility";
-import {LETTER_OF_CREDIT} from "../../vars/localProductUrls";
 import {productSelection} from "../../flows/productSelection";
 import {letterOfCreditNeeds} from "../../flows/letterOfCreditNeeds";
-import {UNSECURED_LOC} from "../../vars/qaProductUrls";
-import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 import {loginNew} from "../../flows/login/loginNew";
 import {kycNew} from "../../flows/kyc/kycNew";
@@ -13,7 +10,7 @@ import {incomeNew} from "../../flows/income/incomeNew";
 test("newLetterOfCredit", async ({page}) => {
     test.setTimeout(0);
 
-    const loanUrl = await getLoanUrl(process.env.ENVIRONMENT, UNSECURED_LOC, LETTER_OF_CREDIT, process.env.PRNUMBER);
+    const loanUrl = process.env.ENVIRONMENT;
     console.log("loanUrl: ", loanUrl);
 
     console.log("loanUrl: ", loanUrl);

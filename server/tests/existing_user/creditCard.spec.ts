@@ -1,20 +1,13 @@
 import {test} from '../testSetup'
-import {CASH_REWARDS_CREDIT_CARD,} from "../../vars/qaProductUrls";
-import {CREDIT_CARD} from "../../vars/localProductUrls";
 import {eligibility} from "../../flows/eligibility";
-import {acceptDisclosures, getLoanUrl} from "../../vars/utilMethods";
+import {acceptDisclosures} from "../../vars/utilMethods";
 import {loginPrefill} from "../../flows/login/loginPrefill";
 import {kycPrefill} from "../../flows/kyc/kycPrefill";
 import {incomePrefill} from "../../flows/income/incomePrefill";
 
 test("creditCardPrefill", async ({page}) => {
     test.setTimeout(0);
-    const loanUrl: string = await getLoanUrl(
-        process.env.ENVIRONMENT,
-        CASH_REWARDS_CREDIT_CARD,
-        CREDIT_CARD,
-        process.env.PRNUMBER,
-    );
+    const loanUrl = process.env.ENVIRONMENT;
     console.log("loanUrl: ", loanUrl);
 
     await loginPrefill(page, loanUrl);

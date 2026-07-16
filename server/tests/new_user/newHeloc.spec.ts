@@ -1,6 +1,4 @@
 import {test} from '../testSetup';
-import {HOME_EQUITY_LINE_OF_CREDIT} from "../../vars/qaProductUrls";
-import {HELOC} from "../../vars/localProductUrls";
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
 import {loginNew} from "../../flows/login/loginNew";
@@ -9,17 +7,11 @@ import {kycNew} from "../../flows/kyc/kycNew";
 import {incomeNew} from "../../flows/income/incomeNew";
 import {demographicsNew} from "../../flows/demographicsNew";
 import {propertyDetailsNew} from "../../flows/propertyDetailsNew";
-import {getLoanUrl} from "../../vars/utilMethods";
 import {coappInfo} from "../../flows/coappInfo";
 
 test("newHeloc", async ({page}) => {
     test.setTimeout(0);
-    const loanUrl: string = await getLoanUrl(
-        process.env.ENVIRONMENT,
-        HOME_EQUITY_LINE_OF_CREDIT,
-        HELOC,
-        process.env.PRNUMBER
-    );
+    const loanUrl = process.env.ENVIRONMENT;
     console.log("loanUrl: ", loanUrl);
 
     await loginNew(page, loanUrl);
