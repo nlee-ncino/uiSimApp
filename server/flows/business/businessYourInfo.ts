@@ -1,3 +1,5 @@
+import {acceptDisclosures} from "../../vars/utilMethods";
+
 export const businessYourInfo = async (page: any) => {
     const dob = process.env.DOB || '12/12/2000';
     const ssn = (process.env.SSN || '666-00-1234').replace(/\D/g, '');
@@ -38,6 +40,8 @@ export const businessYourInfo = async (page: any) => {
     }
     await page.waitForTimeout(500);
 
+    await acceptDisclosures(page);
+
     if (process.env.PREMATURESTOP === 'businessYourInfo') {
         await new Promise(() => {
         });
@@ -68,7 +72,10 @@ export const businessYourInfo = async (page: any) => {
 
     await page.locator('[data-cy="Drivers License"]').click();
     await page.waitForTimeout(500);
-    await page.locator('[data-cy="drivers_license_number-field"]').pressSequentially(dlNumber, {delay: 100});
+    // The DL number field moved to the indexed identification-number-field testid pattern.
+    await page.getByTestId('drivers_license_number-identification-number-field')
+        .locator('input')
+        .pressSequentially(dlNumber, {delay: 100});
     await page.waitForTimeout(500);
 
     const stateDropdown = page.locator('[data-cy="drivers_license_issuing_state-dropdown"]');

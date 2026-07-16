@@ -1,7 +1,6 @@
 import {LOCAL_BUSINESS_DEPOSIT, QA_BUSINESS_DEPOSIT} from "../../vars/businessProductUrls";
 import {getLoanUrl} from "../../vars/utilMethods";
 import {businessLogin} from "../../flows/business/businessLogin";
-import {businessEligibility} from "../../flows/business/businessEligibility";
 import {businessProductSelection} from "../../flows/business/businessProductSelection";
 import {businessInfo} from "../../flows/business/businessInfo";
 import {businessYourInfo} from "../../flows/business/businessYourInfo";
@@ -20,7 +19,6 @@ test("newBusinessDeposit", async ({page}) => {
 
     try {
         await businessLogin(page, productUrl);
-        await businessEligibility(page);
         await businessProductSelection(page);
         await businessInfo(page);
         await businessYourInfo(page);

@@ -68,36 +68,51 @@ export const businessLogin = async (page: any, url: any) => {
         .catch(() => false);
 
     if (onTerms) {
-        await page.waitForLoadState('networkidle', {timeout: 30000}).catch(() => {});
+        // Note: no networkidle wait — this SPA long-polls, so it never settles.
         await page.waitForTimeout(2000);
 
         const tcButton = page.locator('button[data-cy="continue"]').first();
-        await tcButton.waitFor({state: 'visible', timeout: 15000});
-        await tcButton.scrollIntoViewIfNeeded().catch(() => {});
-        await page.waitForTimeout(500);
+        await tcButton.waitFor({state: 'visible', timeout: 15000}).catch(() => {});
 
-        // Real user click via bounding-box center — bypasses Vuetify ripple wrappers
-        const box = await tcButton.boundingBox();
-        if (box) {
-            await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-            await page.mouse.down();
-            await page.waitForTimeout(100);
-            await page.mouse.up();
-        } else {
-            await tcButton.click({force: true});
-        }
-        await page.waitForTimeout(2000);
-
-        // If still on T&C, fall back to dispatching the full mouse-event sequence
-        if (/terms-and-conditions/i.test(page.url())) {
-            await page.evaluate(() => {
-                const btn = document.querySelector('button[data-cy="continue"]') as HTMLElement | null;
-                if (!btn) return;
-                ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach((type) => {
-                    btn.dispatchEvent(new MouseEvent(type, {bubbles: true, cancelable: true, view: window, button: 0}));
-                });
+        // The T&C body is long and scrollable; the continue button sits below the fold and is
+        // typically disabled until the terms are scrolled to the bottom. Scroll the whole page
+        // (and any inner scroll container) to the bottom to enable it, then wait for enabled.
+        await page.evaluate(() => {
+            window.scrollTo(0, document.body.scrollHeight);
+            document.querySelectorAll('*').forEach((el) => {
+                if (el.scrollHeight > el.clientHeight) el.scrollTop = el.scrollHeight;
             });
-            await page.waitForTimeout(2000);
+        });
+        await page.waitForTimeout(1000);
+        await tcButton.scrollIntoViewIfNeeded().catch(() => {});
+        await page.waitForFunction(
+            () => {
+                const btn = document.querySelector('button[data-cy="continue"]') as HTMLButtonElement | null;
+                return !!btn && !btn.disabled && !btn.hasAttribute('disabled');
+            },
+            null,
+            {timeout: 15000}
+        ).catch(() => {});
+
+        // Click with a bounded timeout so a covered/animating button can't hang the action
+        // retry loop; fall back to a forced click.
+        await tcButton.click({delay: 200, timeout: 8000}).catch(async () => {
+            await tcButton.click({force: true, timeout: 8000}).catch(() => {});
+        });
+
+        // Wait for the click to navigate off the T&C page. If it doesn't within 10s, retry the
+        // click once more. Avoid page.evaluate here: the click triggers navigation and evaluating
+        // against a tearing-down execution context can hang indefinitely.
+        const leftTerms = await page
+            .waitForURL((url: URL) => !/terms-and-conditions/i.test(url.toString()), {timeout: 10000})
+            .then(() => true)
+            .catch(() => false);
+
+        if (!leftTerms) {
+            await tcButton.click({force: true, timeout: 8000}).catch(() => {});
+            await page
+                .waitForURL((url: URL) => !/terms-and-conditions/i.test(url.toString()), {timeout: 10000})
+                .catch(() => {});
         }
     }
 };

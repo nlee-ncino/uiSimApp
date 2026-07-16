@@ -1,5 +1,3 @@
-import {acceptDisclosures} from "../../vars/utilMethods";
-
 export const businessInfo = async (page: any) => {
     const entityType = process.env.BUSINESSENTITYTYPE || 'llc';
     const businessName = process.env.BUSINESSNAME || 'Acme Test LLC';
@@ -110,9 +108,6 @@ export const businessInfo = async (page: any) => {
         await noneActivities.click({force: true});
         await page.waitForTimeout(500);
     }
-
-    // Disclosures live on the additional details page.
-    await acceptDisclosures(page);
 
     if (process.env.PREMATURESTOP === 'businessInfo') {
         await new Promise(() => {
