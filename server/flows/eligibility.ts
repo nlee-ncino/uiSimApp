@@ -1,4 +1,7 @@
 export const eligibility = async (page: any) => {
+    if (process.env.SKIPELIGIBILITY === 'true') {
+        return;
+    }
     await page.getByRole("textbox", {name: "Where do you live, work,"}).click();
     await page.waitForTimeout(500);
 

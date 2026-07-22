@@ -53,6 +53,11 @@
       </div>
 
       <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="skipEligibility" v-model="formData.skipEligibility"/>
+        <label class="form-check-label" for="skipEligibility">Skip eligibility</label>
+      </div>
+
+      <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="isPrefill" v-model="formData.isPrefill"/>
         <label class="form-check-label" for="isPrefill">
           Existing User who has completed KYC (this will ignore custom user and kyc changes)
@@ -347,6 +352,7 @@ export default {
         coappPhone: '',
         coappEmail: '',
         failEligibility: false,
+        skipEligibility: false,
         customUrl: '',
         batchUrls: '',
         prematureStop: '',
@@ -404,6 +410,7 @@ export default {
         city: this.formData.city,
         zip: this.formData.zip,
         failEligibility: this.formData.failEligibility,
+        skipEligibility: this.formData.skipEligibility,
         prematureStop: this.formData.prematureStop,
         businessName: this.formData.businessName,
         businessEntityType: this.formData.businessEntityType,
