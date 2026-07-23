@@ -54,7 +54,9 @@ const buildTestCommand = (params, isBatch = false) => {
         .map(([key, value]) => {
             // Convert camelCase to UPPERCASE for environment variables
             const envKey = key === 'environment' ? 'ENVIRONMENT' : key.toUpperCase();
-            return `${envKey}=${value}`;
+            // Single-quote the value so spaces (e.g. "josh 2") don't break the command
+            const quoted = `'${String(value).replace(/'/g, `'\\''`)}'`;
+            return `${envKey}=${quoted}`;
         })
         .join(' ');
 
