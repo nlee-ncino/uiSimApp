@@ -1,4 +1,4 @@
-import {EMAIL, PASSWORD} from "../../vars/prefillLoginCredentials";
+import {PASSWORD} from "../../vars/prefillLoginCredentials";
 
 export const loginPrefill = async (page: any, url: any) => {
     await page.goto(url);
@@ -7,7 +7,7 @@ export const loginPrefill = async (page: any, url: any) => {
     await page.getByRole("textbox", {name: "What is your email?"}).click();
     await page.waitForTimeout(200);
 
-    const email = process.env.EMAIL ? process.env.EMAIL : EMAIL;
+    const email = process.env.EMAIL || "";
     console.log("email: ", email);
     await page.getByRole("textbox", {name: "What is your email?"}).fill(email);
     await page.waitForTimeout(200);
