@@ -12,7 +12,6 @@ test("userLoanToKYC", async ({page}) => {
     await loginPrefill(page, loanUrl);
     await eligibility(page);
     await productSelection(page, process.env.HASCOAPPLICANT);
-    //keep the browser open
     await new Promise(() => {
     });
 });

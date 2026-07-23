@@ -21,8 +21,6 @@ export const productSelection = async (page: any, hasCoapplicant: string | undef
         await page.waitForTimeout(500);
     }
 
-    //todo need one most likely for loan officer when that goes out (possibly if branch selector is visible?)
-
     if ((process.env.PREMATURESTOP === "productSelection")) {
         await new Promise(() => {
         });

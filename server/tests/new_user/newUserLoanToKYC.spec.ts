@@ -14,7 +14,6 @@ test("newUserLoanToKYC", async ({page}) => {
     await eligibility(page);
     await productSelection(page, process.env.HASCOAPPLICANT);
     await kycNewPartial(page);
-    //keep the browser open
     await new Promise(() => {
     });
 });

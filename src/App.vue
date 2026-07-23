@@ -19,7 +19,6 @@
         <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant (email is Nathaniel.lee+{random_num}@ncino.com)</label>
       </div>
 
-      <!-- Co-Applicant Info Section -->
       <div class="form-group" v-if="formData.hasCoApplicant">
         <a class="d-flex align-items-center" @click="toggleSection('customCoApp')"
            style="color: black; text-decoration: none; cursor: pointer;">
@@ -64,7 +63,6 @@
         </label>
       </div>
 
-      <!-- User Info Section -->
       <div class="form-group">
         <a class="d-flex align-items-center" @click="toggleSection('customUserInfo')"
            style="color: black; text-decoration: none; cursor: pointer;">
@@ -88,7 +86,6 @@
         </div>
       </div>
 
-      <!-- KYC Section -->
       <div class="form-group">
         <a class="d-flex align-items-center" @click="toggleSection('customKyc')"
            style="color: black; text-decoration: none; cursor: pointer;">
@@ -107,7 +104,6 @@
           </select>
         </div>
 
-        <!-- Permanent resident sub-form -->
         <div v-if="formData.citizenshipStatus === 'permanentResident'">
           <div class="form-group">
             <label for="countryOfCitizenship">Country of Citizenship: <span class="text-muted">Default is AF - Afghanistan</span></label>
@@ -131,7 +127,6 @@
           </div>
         </div>
 
-        <!-- NRA only needs country of citizenship -->
         <div v-if="formData.citizenshipStatus === 'nonResident'">
           <div class="form-group">
             <label for="countryOfCitizenshipNra">Country of Citizenship: <span class="text-muted">Default is AF - Afghanistan</span></label>
@@ -186,7 +181,6 @@
         </select>
       </div>
 
-      <!-- Business Info Section -->
       <div class="form-group" v-if="formData.companyType === 'business'">
         <a class="d-flex align-items-center" @click="toggleSection('customBusiness')"
            style="color: black; text-decoration: none; cursor: pointer;">
@@ -250,10 +244,8 @@
       <div class="mt-3" v-if="sections.prematureStop">
         <label for="prematureStop">Select Stop Page:</label>
         <select class="form-control" id="prematureStop" v-model="formData.prematureStop">
-          <!-- Shared -->
           <option value="login">Login Page</option>
           <option value="productSelection">Product Selection Page</option>
-          <!-- Consumer-only -->
           <template v-if="formData.companyType === 'consumer'">
             <option value="eligibility">Eligibility Page</option>
             <option value="kyc">KYC Page</option>
@@ -263,7 +255,6 @@
             <option value="loanDetails">Loan Details Page</option>
             <option value="loanNeeds">Loan Needs Page</option>
           </template>
-          <!-- Business-only -->
           <template v-else>
             <option value="businessInfo">Business Info Page</option>
             <option value="businessYourInfo">Business Your Info Page</option>
@@ -275,7 +266,6 @@
       <div><strong>* URL Priority is as follows: Batch Urls -> Custom Url.</strong></div>
       <div>Leave the higher priority field empty to use the lower priority field.</div>
 
-      <!-- URL Section -->
       <div class="form-group">
         URL(s)
         <div class="mt-3">
@@ -425,7 +415,6 @@ export default {
     },
     async runTests() {
       try {
-        // Check if batch URLs are provided
         if (this.formData.batchUrls.trim() !== '') {
           const urlPattern = /(https?:\/\/\S+)/g;
           const urls = this.formData.batchUrls.match(urlPattern);
@@ -483,26 +472,22 @@ body {
 }
 
 .form-group {
-  margin-bottom: 1.5rem; /* Increase from default */
+  margin-bottom: 1.5rem;
 }
 
-/* Add more space before section toggles */
 .form-group a.d-flex {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
-/* Add more space between sections */
 .mt-3 {
   margin-top: 1.5rem !important;
 }
 
-/* Add more space before the submit button */
 button[type="submit"] {
   margin-top: 2rem;
 }
 
-/* Add hover effect to toggleable sections */
 .form-group a.d-flex:hover {
   background-color: #f5f5f5;
   border-radius: 4px;
@@ -511,7 +496,6 @@ button[type="submit"] {
   transition: background-color 0.2s ease;
 }
 
-/* Add a subtle color change to the toggle indicator on hover */
 .form-group a.d-flex:hover span {
   color: #007bff;
 }

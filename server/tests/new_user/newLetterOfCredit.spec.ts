@@ -23,7 +23,6 @@ test("newLetterOfCredit", async ({page}) => {
         await coappInfo(page);
     }
     await letterOfCreditNeeds(page);
-    //keep the browser open
     await new Promise(() => {
     });
 });

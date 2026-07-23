@@ -1,31 +1,22 @@
 export const generateRandomEmail = (): string => {
-    const randomNumber = Math.floor(10000000 + Math.random() * 90000000); // 8-digit number
+    const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
     return `nathaniel.lee+${randomNumber}@ncino.com`;
 };
 
 export const generateRandomResidentNumber = (): string => {
-    return Math.floor(100000000 + Math.random() * 900000000).toString(); // 9-digit number
+    return Math.floor(100000000 + Math.random() * 900000000).toString();
 };
 
 export const acceptDisclosures = async (page: any) => {
-    // If we're on an intermediate page (e.g. Evaluating_eligibility), wait for the URL
-    // to settle on the real destination before looking for disclosures.
     if (page.url().includes('Evaluating_eligibility')) {
         await page.waitForURL((url: URL) => !url.toString().includes('Evaluating_eligibility'), {timeout: 60000}).catch(() => {});
     }
 
-    // Best-effort: some pages (e.g. consumer KYC) keep polling and never reach networkidle.
     await page.waitForLoadState('networkidle', {timeout: 10000}).catch(() => {});
 
     const viewAndAcceptText = 'View and Accept';
     const acceptText = 'Accept';
 
-    // Disclosure buttons are gator "ngc-button" web components: the real <button> lives in an
-    // open shadow root and the visible label is slotted light-DOM text. getByRole pierces the
-    // shadow root and matches the slotted accessible name; if that misses (whitespace/aria
-    // quirks), fall back to the host's text and click its inner <button>. Both matches are
-    // anchored exactly so an already-accepted button (label becomes "Accepted") is NOT matched
-    // by "Accept" — otherwise the loop would re-click it forever and never reach Save & Continue.
     const resolveButton = async (text: string): Promise<any | null> => {
         const role = page.getByRole('button', {name: text, exact: true});
         if ((await role.count()) > 0) return role.first();
@@ -40,7 +31,6 @@ export const acceptDisclosures = async (page: any) => {
 
     const checkboxLocator = page.locator('[data-cy="consent-checkbox"], .v-input--selection-controls__ripple');
 
-    // Poll until any disclosure element appears (checkbox or accept button), or give up.
     const pollTimeout = 30000;
     const pollInterval = 1000;
     const pollStart = Date.now();
@@ -61,10 +51,6 @@ export const acceptDisclosures = async (page: any) => {
 
     await page.waitForTimeout(1000);
 
-    // Handle traditional consent checkboxes. Click ONLY [data-cy="consent-checkbox"] when
-    // present — the ripple span lives inside that same control, so clicking both toggles the
-    // checkbox twice (check then uncheck). Fall back to the ripple only for legacy Vuetify
-    // pages that have no consent-checkbox.
     const consentCheckboxes = page.locator('[data-cy="consent-checkbox"]');
     const checkboxes = (await consentCheckboxes.count()) > 0
         ? consentCheckboxes
@@ -75,9 +61,6 @@ export const acceptDisclosures = async (page: any) => {
         }
     }
 
-    // Handle the newer disclosure-group style: "View and Accept" opens a document viewer
-    // modal that requires scrolling to the bottom before the Accept button enables, or a
-    // plain "Accept" button with no modal.
     const acceptOneDisclosure = async (): Promise<boolean> => {
         const viewAndAcceptButton = await resolveButton(viewAndAcceptText);
         if (viewAndAcceptButton) {
@@ -97,7 +80,6 @@ export const acceptDisclosures = async (page: any) => {
                 .then(() => true)
                 .catch(() => false);
 
-            // Some disclosures accept inline without opening the document-viewer modal.
             if (!modalShown) {
                 return true;
             }
@@ -107,7 +89,6 @@ export const acceptDisclosures = async (page: any) => {
             const acceptBtn = page.locator('[data-cy="document-viewer-accept-btn"]');
             await acceptBtn.waitFor({state: 'visible', timeout: 30000});
 
-            // Scroll the PDF container to the bottom to enable the accept button.
             const scrollableContent = page.locator('[data-cy="viewer-modal-scrollable-content"]');
             if ((await scrollableContent.count()) > 0) {
                 await scrollableContent.evaluate((el: HTMLElement) => {
@@ -116,7 +97,6 @@ export const acceptDisclosures = async (page: any) => {
                 await page.waitForTimeout(500);
             }
 
-            // Wait for the accept button to become enabled.
             await page.waitForFunction(
                 () => {
                     const btn = document.querySelector('[data-cy="document-viewer-accept-btn"]');
@@ -132,7 +112,6 @@ export const acceptDisclosures = async (page: any) => {
             return true;
         }
 
-        // Disclosures without a document, requiring only a click on "Accept".
         const acceptButton = await resolveButton(acceptText);
         if (acceptButton) {
             await acceptButton.click({delay: 500});
@@ -142,7 +121,6 @@ export const acceptDisclosures = async (page: any) => {
         return false;
     };
 
-    // Keep accepting disclosures until none are left.
     const maxDisclosures = 20;
     let disclosuresAccepted = 0;
     while (await acceptOneDisclosure()) {
@@ -157,24 +135,15 @@ export const acceptDisclosures = async (page: any) => {
     }
 }
 
-/**
- * Formats a phone number to (XXX) XXX-XXXX.
- * If too short, pads with '4'. If too long, trims to 10 digits.
- * @param raw - Raw phone number input
- * @returns Formatted phone number
- */
 export function formatPhoneNumber(raw: string): string {
-    // Remove all non-digit characters
     let digits = raw.replace(/\D/g, '');
 
-    // Adjust length
     if (digits.length < 10) {
         digits = digits.padEnd(10, '4');
     } else if (digits.length > 10) {
         digits = digits.slice(0, 10);
     }
 
-    // Format to (XXX) XXX-XXXX
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 

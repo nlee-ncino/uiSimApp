@@ -52,15 +52,12 @@ const buildTestCommand = (params, isBatch = false) => {
     const envVars = Object.entries(params)
         .filter(([key]) => key !== 'path')
         .map(([key, value]) => {
-            // Convert camelCase to UPPERCASE for environment variables
             const envKey = key === 'environment' ? 'ENVIRONMENT' : key.toUpperCase();
-            // Single-quote the value so spaces (e.g. "josh 2") don't break the command
             const quoted = `'${String(value).replace(/'/g, `'\\''`)}'`;
             return `${envKey}=${quoted}`;
         })
         .join(' ');
 
-    // Add BATCH_TEST=true for batch tests
     const batchEnv = isBatch ? 'BATCH_TEST=true ' : '';
 
     return `${batchEnv}${envVars} npx playwright test ${params.path} --headed`;
@@ -69,7 +66,6 @@ const buildTestCommand = (params, isBatch = false) => {
 app.use(cors());
 app.use(bodyParser.json());
 
-// API routes
 app.post('/run-tests', async (req) => {
     try {
         const {
@@ -236,7 +232,7 @@ app.post('/run-tests-batch', async (req) => {
                 businessState,
                 businessZip,
                 path
-            }, true) // Pass true for isBatch parameter
+            }, true)
             console.log(`Running test command for ${envUrl}:`, testCommand);
             exec(testCommand, (error, stdout, stderr) => {
                 if (error) {
@@ -254,7 +250,7 @@ app.post('/run-tests-batch', async (req) => {
     }
 });
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.send(`
             <html>
                 <head><title>API Server</title></head>

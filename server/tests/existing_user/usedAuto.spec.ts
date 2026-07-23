@@ -24,7 +24,6 @@ test("usedAuto", async ({page}) => {
     }
     await autoDetails(page);
     await autoNeeds(page);
-    //keep the browser open
     await new Promise(() => {
     });
 });

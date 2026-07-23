@@ -11,7 +11,6 @@ export const propertyDetailsNew = async (page: any) => {
     await page.getByRole('textbox', {name: 'What is the estimated value'}).fill('450000');
     await page.waitForTimeout(200);
 
-    //this isn't really loan details but i'm lazy lol
     if ((process.env.PREMATURESTOP === "loanDetails")) {
         await new Promise(() => {
         });

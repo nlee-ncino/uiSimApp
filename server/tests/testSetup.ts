@@ -22,20 +22,16 @@ export const test = base.extend({
             });
         };
 
-        // Check if this is a batch test run by looking for multiple environment variables
-        // or a specific batch identifier in environment variables
         const isBatchTest = process.env.BATCH_TEST === 'true' || 
                            (process.env.ENVIRONMENT && process.env.ENVIRONMENT.includes('batch'));
 
         let context;
 
         if (isBatchTest) {
-            // Use browser.newContext() for batch tests to ensure isolation
             context = await browser.newContext({
                 ...commonContextOptions,
             });
         } else {
-            // Use persistent context for single tests with Vue DevTools extension
             const vueDevToolsPath = path.join(__dirname, '../extensions/vue-tools/6.6.4_0');
             const userDataDir = path.join(__dirname, '../temp-profile');
 
@@ -51,7 +47,6 @@ export const test = base.extend({
                 ],
             });
 
-            // Close the default blank page for persistent context
             const [firstPage] = context.pages();
             if (firstPage) await firstPage.close();
         }

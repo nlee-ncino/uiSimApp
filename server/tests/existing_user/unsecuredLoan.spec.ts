@@ -22,7 +22,6 @@ test("unsecuredLoanPrefill", async ({page}) => {
         await coappInfo(page);
     }
     await unsecuredTermNeeds(page);
-    //keep the browser open
     await new Promise(() => {
     });
 });

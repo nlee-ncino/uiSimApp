@@ -9,10 +9,6 @@ export const businessInfo = async (page: any) => {
     const businessState = process.env.BUSINESSSTATE || 'NC';
     const businessZip = process.env.BUSINESSZIP || '60750';
 
-    // Basic Details — Entity Type selection. This page renders either as a Vuetify dropdown
-    // or as card buttons; the dropdown can take a moment to mount after transitioning in from
-    // product selection. Race the two over 30s (omni's pattern) rather than assuming cards
-    // after a short dropdown timeout — otherwise we hang clicking a card that never exists.
     const dropdown = page.getByRole('combobox', {name: 'Entity Type'});
     const cardMap: Record<string, string> = {
         corporation: 'Corporation',
@@ -55,16 +51,13 @@ export const businessInfo = async (page: any) => {
     await page.locator('[data-cy="continue-btn"]').click({delay: 500});
     await page.waitForLoadState('networkidle', {timeout: 30000});
 
-    // Wait for matching to complete then move to additional details
     await page.locator('[data-cy="business_other_names-Yes-btn"], [data-cy="business_address-field"]')
         .first()
         .waitFor({state: 'visible', timeout: 60000});
 
-    // No DBA
     await page.locator('[data-cy="business_other_names-No-btn"]').click();
     await page.waitForTimeout(500);
 
-    // Country dropdown (when present) clears address fields on change — set first
     const countryField = page.locator('[data-cy="business_origin-field"]');
     if (await countryField.isVisible({timeout: 2000}).catch(() => false)) {
         await countryField.selectOption('US').catch(() => {});
@@ -72,7 +65,6 @@ export const businessInfo = async (page: any) => {
         await page.waitForTimeout(500);
     }
 
-    // Use pressSequentially for the address field to suppress the autocomplete picker
     await page.locator('[data-cy="business_address-field"]').click();
     await page.locator('[data-cy="business_address-field"]').pressSequentially(businessAddress, {delay: 50});
     await page.click('body', {position: {x: 0, y: 0}});
@@ -84,7 +76,6 @@ export const businessInfo = async (page: any) => {
     const stateDropdown = page.locator('[data-cy="business_state-dropdown"]');
     if (await stateDropdown.isVisible({timeout: 2000}).catch(() => false)) {
         await stateDropdown.selectOption(businessState).catch(async () => {
-            // Fallback for searchable dropdowns
             await stateDropdown.click({delay: 200});
             await page.waitForTimeout(500);
             await page.getByRole('option', {name: businessState, exact: true}).first().click().catch(() => {});
@@ -101,8 +92,6 @@ export const businessInfo = async (page: any) => {
     await page.locator('[data-cy="business_phone-field"]').fill(businessPhone);
     await page.waitForTimeout(500);
 
-    // Business activities — select "None of the above" (the input is visually hidden,
-    // so click the label).
     const noneActivities = page.locator('label[for="kyb_business_activities-4"]');
     if (await noneActivities.isVisible({timeout: 2000}).catch(() => false)) {
         await noneActivities.click({force: true});

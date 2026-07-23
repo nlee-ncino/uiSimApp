@@ -20,7 +20,6 @@ export const loginNew = async (page: any, url: any) => {
     await page.getByRole("button", {name: "Continue"}).click();
     await page.waitForTimeout(200);
 
-    //sign up page
     const firstName = process.env.FIRSTNAME ? process.env.FIRSTNAME : 'John';
     await page.getByRole("textbox", {name: "First Name"}).fill(firstName);
     await page.waitForTimeout(200);

@@ -25,7 +25,6 @@ test("heloc", async ({page}) => {
         await coappInfo(page);
     }
     await propertyDetailsNew(page);
-    //keep the browser open
     await new Promise(() => {
     });
 });

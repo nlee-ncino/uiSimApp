@@ -12,8 +12,6 @@ test("creditCardPrefill", async ({page}) => {
 
     await loginPrefill(page, loanUrl);
     await eligibility(page);
-    // await productSelection(page);
-    //no product selection for credit card
     await page.waitForSelector('text=Looks like you\'re applying for', {timeout: 60000});
     await page.getByRole("button", {name: "Save & Continue"}).click();
     await page.waitForTimeout(500);
@@ -24,7 +22,6 @@ test("creditCardPrefill", async ({page}) => {
 
     await page.getByRole("button", {name: "Save & Continue"}).click();
     await page.waitForTimeout(200);
-    //keep the browser open
     await new Promise(() => {
     });
 });

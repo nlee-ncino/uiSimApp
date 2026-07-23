@@ -1,23 +1,13 @@
 import {generateRandomResidentNumber} from "../../vars/utilMethods";
 
 export const kycNewPartial = async (page: any) => {
-    // Citizenship is a 3-way choice on the KYC page (mirrors omni personal-info-page):
-    //   citizen            -> U.S. Citizen (default, full identity path)
-    //   permanentResident  -> U.S. Permanent Resident (residency sub-form, then full path)
-    //   nonResident        -> Non-U.S. Citizen / NRA (country + DOB only; the app gates the rest)
     const citizenshipStatus = (process.env.CITIZENSHIPSTATUS || 'citizen').toLowerCase();
     const dob = process.env.DOB || '12/12/2000';
-    // Permanent residents may or may not have an SSN. When "No", the app hides the SSN field,
-    // so we both click the No toggle and skip the SSN fill in the shared identity path.
     const residentHasSsn = (process.env.RESIDENTHASSSN || 'true').toLowerCase() !== 'false';
 
-    // Fill a Vuetify-style dropdown by clicking it then selecting the matching option.
-    // The country dropdown is a readonly v-select whose `.v-select__selections` overlay
-    // intercepts pointer events, so force the click (as omni's selectFromDropdown does).
     const selectFromDropdown = async (dropdown: any, optionName: string) => {
         await dropdown.click({delay: 200, force: true});
         await page.waitForTimeout(300);
-        // Exclude native <select> <option>s; Vuetify options are not inside a <select>.
         await page
             .getByRole('option', {name: optionName, exact: true})
             .and(page.locator(':not(select *)'))
@@ -26,9 +16,6 @@ export const kycNewPartial = async (page: any) => {
         await page.waitForTimeout(500);
     };
 
-    // Shared tail for citizens and permanent residents: DOB, SSN, address, identification.
-    // SSN is skipped when the applicant has no SSN (permanent resident answering "No"), since
-    // the app hides the field in that case.
     const fillFullIdentity = async (fillSsn = true) => {
         await page.locator('input[data-cy="dob-field"]').fill(dob);
         await page.waitForTimeout(200);
@@ -99,14 +86,11 @@ export const kycNewPartial = async (page: any) => {
 
         await page.locator('input[data-cy="identification_expiration_date-field"]').click();
         await page.waitForTimeout(200);
-        // A far-future year trips the field's aboveMaxDate validation and leaves the
-        // datepicker open, blocking the rest of the flow. Use a near-future expiration date.
         await page.locator('input[data-cy="identification_expiration_date-field"]').fill('12/12/2030');
         await page.keyboard.press('Escape');
         await page.waitForTimeout(200);
     };
 
-    // Fill the permanent-resident sub-form (country, residency dates, resident number, has-SSN).
     const fillPermanentResidentForm = async () => {
         const country = process.env.COUNTRYOFCITIZENSHIP || 'AF - Afghanistan';
         await selectFromDropdown(page.locator('[data-testid="country_of_citizenship-dropdown"]'), country);
@@ -140,7 +124,6 @@ export const kycNewPartial = async (page: any) => {
     } else if (citizenshipStatus === 'nonresident' || citizenshipStatus === 'nra') {
         await page.getByRole('radio', {name: 'Non-U.S. Citizen', exact: true}).click();
         await page.waitForTimeout(1200);
-        // NRA path: country of citizenship + DOB only — the app gates SSN/address/ID.
         const country = process.env.COUNTRYOFCITIZENSHIP || 'AF - Afghanistan';
         await selectFromDropdown(page.locator('[data-testid="country_of_citizenship-dropdown"]'), country);
         await page.locator('input[data-cy="dob-field"]').fill(dob);

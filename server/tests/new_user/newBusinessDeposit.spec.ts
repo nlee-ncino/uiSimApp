@@ -25,7 +25,6 @@ test("newBusinessDeposit", async ({page}) => {
         console.error('Flow failed — keeping browser open so you can inspect:', err);
     }
 
-    // keep the browser open
     await new Promise(() => {
     });
 });

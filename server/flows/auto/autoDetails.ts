@@ -46,7 +46,6 @@ export const autoDetails = async (page: any) => {
     }
     await page.getByRole("button", {name: "Continue"}).click();
     await page.waitForTimeout(500);
-    // auto review
     await page.getByRole("button", {name: "Continue"}).click();
     await page.waitForTimeout(500);
 };

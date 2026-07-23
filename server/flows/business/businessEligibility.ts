@@ -1,13 +1,9 @@
-// Business individual-eligibility questions (credit-union membership). Gated behind a company
-// setting, so the page may not appear — bail out gracefully if it doesn't. Uses the same
-// eligibility_* dropdowns as the consumer flow.
 export const businessEligibility = async (page: any) => {
     if (process.env.SKIPELIGIBILITY === 'true') {
         return;
     }
     const locationDropdown = page.locator('input[data-cy="eligibility_live_work_worship_volunteer-dropdown"]');
 
-    // If the eligibility page never renders (setting disabled), skip it.
     const present = await locationDropdown
         .waitFor({state: 'visible', timeout: 15000})
         .then(() => true)
@@ -32,7 +28,6 @@ export const businessEligibility = async (page: any) => {
     await selectOption(page.locator('input[data-cy="eligibility_employment_location-dropdown"]'), 'Atrium Health');
     await selectOption(page.locator('input[data-cy="eligibility_school_attended-dropdown"]'), 'Clemson University');
 
-    // Not related to an existing member.
     await page.locator('input[data-cy="eligibility_family_member-No-btn"]').click();
     await page.waitForTimeout(500);
 
