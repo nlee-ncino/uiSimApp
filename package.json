@@ -6,7 +6,11 @@
     "all": "npm run kill-server && concurrently \"npm run serve\" \"cd server && npm run dev\"",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "kill-server": "sh -c 'PID=$(lsof -ti :4001); if [ -n \"$PID\" ]; then kill -9 $PID; fi'"
+    "kill-server": "sh -c 'PID=$(lsof -ti :4001); if [ -n \"$PID\" ]; then kill -9 $PID; fi'",
+    "ensure:chromium": "npm --prefix server run ensure:chromium",
+    "postinstall": "npm --prefix server install",
+    "preall": "npm run ensure:chromium",
+    "prebuild": "npm run ensure:chromium"
   },
   "dependencies": {
     "@playwright/test": "^1.53.1",

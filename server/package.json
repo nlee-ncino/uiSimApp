@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "ensure:chromium": "node scripts/ensure-chromium.js",
+    "postinstall": "npm run ensure:chromium"
   },
   "dependencies": {
     "body-parser": "^1.20.3",
