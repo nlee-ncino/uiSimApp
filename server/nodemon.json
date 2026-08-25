@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "temp-profile/**",
+    "test-results/**",
+    "playwright-report/**"
+  ]
+}

@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const {exec} = require("child_process");
+const {spawn} = require("child_process");
 const app = express();
 const port = process.env.PORT || 4001;
 const getUrlPath = (testType, isPrefill) => {
@@ -63,10 +63,32 @@ const buildTestCommand = (params, isBatch = false) => {
     return `${batchEnv}${envVars} npx playwright test ${params.path} --headed`;
 };
 
+const startTest = (testCommand, label) => {
+    console.log(`Starting ${label}`);
+
+    const child = spawn('/bin/sh', ['-lc', testCommand], {
+        cwd: __dirname,
+        stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    child.stdout.on('data', (output) => {
+        process.stdout.write(`[${label}] ${output}`);
+    });
+    child.stderr.on('data', (output) => {
+        process.stderr.write(`[${label}] ${output}`);
+    });
+    child.on('error', (error) => {
+        console.error(`Unable to start ${label}:`, error);
+    });
+    child.on('close', (code, signal) => {
+        console.log(`${label} exited with code ${code}${signal ? ` (signal: ${signal})` : ''}`);
+    });
+};
+
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post('/run-tests', async (req) => {
+app.post('/run-tests', (req, res) => {
     try {
         const {
             email,
@@ -108,6 +130,10 @@ app.post('/run-tests', async (req) => {
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
+        if (!path) {
+            return res.status(400).json({error: `Unsupported test type: ${testType}`});
+        }
+
         const testCommand = buildTestCommand({
             email,
             password,
@@ -144,15 +170,17 @@ app.post('/run-tests', async (req) => {
             businessState,
             businessZip,
             path
-        })
-        console.log('Running test command:', testCommand);
-        exec('killall \'Google Chrome for Testing\'', () => exec(testCommand));
+        });
+
+        startTest(testCommand, path);
+        return res.status(202).json({message: 'Test started', path});
     } catch (error) {
         console.error('Error running tests:', error);
+        return res.status(500).json({error: 'Unable to start test'});
     }
 });
 
-app.post('/run-tests-batch', async (req) => {
+app.post('/run-tests-batch', (req, res) => {
     try {
         const {
             email,
@@ -194,6 +222,12 @@ app.post('/run-tests-batch', async (req) => {
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
+        if (!path) {
+            return res.status(400).json({error: `Unsupported test type: ${testType}`});
+        }
+        if (!Array.isArray(urls) || urls.length === 0) {
+            return res.status(400).json({error: 'At least one batch URL is required'});
+        }
 
         urls.forEach((envUrl) => {
             const testCommand = buildTestCommand({
@@ -232,21 +266,13 @@ app.post('/run-tests-batch', async (req) => {
                 businessState,
                 businessZip,
                 path
-            }, true)
-            console.log(`Running test command for ${envUrl}:`, testCommand);
-            exec(testCommand, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`Error for ${envUrl}:`, error);
-                    return;
-                }
-                console.log(`Output for ${envUrl}:\n`, stdout);
-                if (stderr) {
-                    console.error(`Stderr for ${envUrl}:\n`, stderr);
-                }
-            });
+            }, true);
+            startTest(testCommand, `${path} (${envUrl})`);
         });
+        return res.status(202).json({message: 'Batch tests started', path, count: urls.length});
     } catch (error) {
         console.error('Error running batch tests:', error);
+        return res.status(500).json({error: 'Unable to start batch tests'});
     }
 });
 
