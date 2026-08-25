@@ -244,6 +244,7 @@
       <div class="mt-3" v-if="sections.prematureStop">
         <label for="prematureStop">Select Stop Page:</label>
         <select class="form-control" id="prematureStop" v-model="formData.prematureStop">
+          <option value="">Don't Stop Early</option>
           <option value="login">Login Page</option>
           <option value="productSelection">Product Selection Page</option>
           <template v-if="formData.companyType === 'consumer'">
