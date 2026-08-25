@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="text-center">Create Sample Consumer Loan</h1>
+    <h1 class="text-center">Create Sample Loan</h1>
     <form id="testForm" class="mt-4" @submit.prevent="runTests">
       <div class="form-group">
         <label for="email">Email:
