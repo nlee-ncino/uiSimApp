@@ -462,9 +462,9 @@ export default {
     return {
       formData: getDefaultFormData(),
       sections: {
-        customUserInfo: false,
+        customUserInfo: true,
         customCoApp: false,
-        customKyc: false,
+        customKyc: true,
         customBusiness: false,
         prematureStop: false
       },
