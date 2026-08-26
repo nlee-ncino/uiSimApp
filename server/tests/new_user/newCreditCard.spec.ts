@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {eligibility} from "../../flows/eligibility";
 import {loginNew} from "../../flows/login/loginNew";
 import {kycNew} from "../../flows/kyc/kycNew";
@@ -23,6 +23,5 @@ test("newCreditCard", async ({page}) => {
 
     await page.getByRole("button", {name: "Save & Continue"}).click();
     await page.waitForTimeout(200);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

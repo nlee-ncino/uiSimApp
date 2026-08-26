@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
 import {loginNew} from "../../flows/login/loginNew";
@@ -25,6 +25,5 @@ test("newHeloc", async ({page}) => {
         await coappInfo(page);
     }
     await propertyDetailsNew(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

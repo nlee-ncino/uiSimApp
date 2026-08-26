@@ -20,13 +20,15 @@ export const businessManagingController = async (page: any) => {
     await page.waitForTimeout(500);
 
     if (isOwner) {
-        const ownerName = `${firstName} ${lastName}`;
-        const ownerOption = page.getByRole('option', {name: ownerName, exact: true});
-        if (await ownerOption.isVisible({timeout: 3000}).catch(() => false)) {
-            await ownerOption.click();
-        } else {
-            await page.getByRole('option').first().click();
-        }
+        const firstOwnerOption = page.locator('[role="option"]:visible').first();
+        await firstOwnerOption.waitFor({state: 'visible', timeout: 15000});
+        await firstOwnerOption.click();
+        await page.waitForFunction(() => {
+            const selectedController = document.querySelector('[data-cy="managing_controller-dropdown"]');
+            if (!selectedController) return false;
+            const value = (selectedController as HTMLInputElement).value || selectedController.textContent || '';
+            return value.trim().length > 0;
+        }, null, {timeout: 15000});
         await page.waitForTimeout(500);
     } else {
         await page.getByRole('option', {name: 'Someone else', exact: true}).click();
