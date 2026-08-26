@@ -4,7 +4,7 @@ export const coappInfo = async (page: any) => {
     const firstName = process.env.COAPPFIRSTNAME || 'NateCoapp';
     const lastName = process.env.COAPPLASTNAME || 'Pass';
     const phone = process.env.COAPPPHONE ? formatPhoneNumber(process.env.COAPPPHONE) : '(111) 111-1111';
-    const email = process.env.COAPPEMAIL || generateRandomEmail();
+    const email = generateRandomEmail(process.env.COAPPEMAIL, process.env.COAPPFIRSTNAME, process.env.COAPPLASTNAME);
 
     await page.getByRole('textbox', {name: 'Co-applicant first name'}).click();
     await page.waitForTimeout(500);
@@ -37,5 +37,4 @@ export const coappInfo = async (page: any) => {
     await page.getByRole('button', {name: 'Save & Continue'}).click();
     await page.waitForTimeout(500);
 }
-
 

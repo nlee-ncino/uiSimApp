@@ -1,8 +1,8 @@
-import {generateRandomResidentNumber} from "../../vars/utilMethods";
+import {generateRandomDob, generateRandomResidentNumber, generateRandomSsn} from "../../vars/utilMethods";
 
 export const kycNewPartial = async (page: any) => {
     const citizenshipStatus = (process.env.CITIZENSHIPSTATUS || 'citizen').toLowerCase();
-    const dob = process.env.DOB || '12/12/2000';
+    const dob = process.env.DOB || generateRandomDob();
     const residentHasSsn = (process.env.RESIDENTHASSSN || 'true').toLowerCase() !== 'false';
 
     const selectFromDropdown = async (dropdown: any, optionName: string) => {
@@ -21,7 +21,7 @@ export const kycNewPartial = async (page: any) => {
         await page.waitForTimeout(200);
 
         if (fillSsn) {
-            const ssn = process.env.SSN || '666-00-1234';
+            const ssn = process.env.SSN || generateRandomSsn();
             await page.getByTestId('ssn-identification-number-field-input').fill(ssn);
             await page.waitForTimeout(200);
         }

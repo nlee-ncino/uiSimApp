@@ -1,8 +1,8 @@
-import {acceptDisclosures} from "../../vars/utilMethods";
+import {acceptDisclosures, generateRandomDob, generateRandomSsn} from "../../vars/utilMethods";
 
 export const businessYourInfo = async (page: any) => {
-    const dob = process.env.DOB || '12/12/2000';
-    const ssn = (process.env.SSN || '666-00-1234').replace(/\D/g, '');
+    const dob = process.env.DOB || generateRandomDob();
+    const ssn = (process.env.SSN || generateRandomSsn()).replace(/\D/g, '');
     const ownerPercentage = process.env.BUSINESSOWNERPERCENTAGE || '100';
     const dlNumber = process.env.BUSINESSDLNUMBER || 'D1234567';
     const dlIssuingState = process.env.BUSINESSDLSTATE || 'NC';

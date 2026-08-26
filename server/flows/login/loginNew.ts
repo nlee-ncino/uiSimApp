@@ -8,8 +8,7 @@ export const loginNew = async (page: any, url: any) => {
     await page.getByRole("textbox", {name: "What is your email?"}).click();
     await page.waitForTimeout(200);
 
-    const randomEmail = generateRandomEmail();
-    const email = process.env.EMAIL ? process.env.EMAIL : randomEmail;
+    const email = generateRandomEmail(process.env.EMAIL, process.env.FIRSTNAME, process.env.LASTNAME, true);
 
     console.log("email: ", email);
     await page

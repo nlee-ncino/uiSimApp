@@ -2,8 +2,109 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const {spawn} = require("child_process");
+const fs = require('fs');
+const nodePath = require('path');
 const app = express();
 const port = process.env.PORT || 4001;
+
+const localConfigDirectory = nodePath.join(__dirname, '.local');
+const localTestDataPath = nodePath.join(localConfigDirectory, 'test-data.json');
+const testDataConfigFields = [
+    'email', 'password', 'firstName', 'lastName', 'phone', 'citizenshipStatus',
+    'countryOfCitizenship', 'residencyIssueDate', 'residencyEntryDate', 'residentNumber',
+    'residentHasSsn', 'randomizeIdentity', 'dob', 'ssn', 'address', 'city', 'zip', 'hasCoApplicant',
+    'coappFirstName', 'coappLastName', 'coappPhone', 'coappEmail', 'businessName',
+    'businessEntityType', 'randomizeBusinessIdentity', 'businessEin', 'businessPhone', 'businessIncorporationDate',
+    'businessAddress', 'businessCity', 'businessState', 'businessZip', 'businessOwnerPercentage'
+];
+let activeRun = null;
+
+const readLocalTestData = () => {
+    if (!fs.existsSync(localTestDataPath)) {
+        return null;
+    }
+
+    try {
+        const parsed = JSON.parse(fs.readFileSync(localTestDataPath, 'utf8'));
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+    } catch (error) {
+        console.error('Unable to read local test-data defaults:', error);
+        return null;
+    }
+};
+
+const normalizeRelatedParties = (relatedParties) => {
+    if (relatedParties === undefined) return [];
+    if (!Array.isArray(relatedParties)) {
+        throw new Error('Related parties must be a list');
+    }
+
+    return relatedParties.map((party, index) => {
+        const ownershipPercentage = Number(party && party.ownershipPercentage);
+        const firstName = party && typeof party.firstName === 'string' ? party.firstName.trim() : '';
+        const lastName = party && typeof party.lastName === 'string' ? party.lastName.trim() : '';
+        if (!party || typeof party !== 'object' || !firstName || !lastName ||
+            !Number.isFinite(ownershipPercentage) || ownershipPercentage < 20 || ownershipPercentage > 100) {
+            throw new Error(`Related party ${index + 1} needs a first name, last name, and ownership percentage from 20 to 100`);
+        }
+
+        return {
+            firstName,
+            lastName,
+            title: typeof party.title === 'string' ? party.title.trim() : '',
+            email: typeof party.email === 'string' ? party.email.trim() : '',
+            phone: typeof party.phone === 'string' ? party.phone.trim() : '',
+            ownershipPercentage
+        };
+    });
+};
+
+const pickTestDataFields = (data) => {
+    const savedData = testDataConfigFields.reduce((result, field) => {
+    const value = data[field];
+    if (typeof value === 'string' || typeof value === 'boolean') {
+        result[field] = value;
+    }
+    return result;
+    }, {});
+    savedData.relatedParties = normalizeRelatedParties(data.relatedParties);
+    return savedData;
+};
+
+const getRunStatus = () => ({
+    isRunning: Boolean(activeRun && activeRun.status === 'running'),
+    run: activeRun
+});
+
+const beginRun = ({path, count}) => {
+    activeRun = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        status: 'running',
+        path,
+        total: count,
+        completed: 0,
+        startedAt: new Date().toISOString()
+    };
+    return activeRun;
+};
+
+const completeRunProcess = (runId, code, signal) => {
+    if (!activeRun || activeRun.id !== runId || activeRun.status !== 'running') {
+        return;
+    }
+
+    activeRun.completed += 1;
+    if (code !== 0) {
+        activeRun.failed = true;
+    }
+    if (activeRun.completed >= activeRun.total) {
+        activeRun.status = activeRun.failed ? 'failed' : 'completed';
+        activeRun.finishedAt = new Date().toISOString();
+        if (signal) {
+            activeRun.signal = signal;
+        }
+    }
+};
 const getUrlPath = (testType, isPrefill) => {
     let path = "";
     if (testType === "unsecuredTerm") {
@@ -63,7 +164,7 @@ const buildTestCommand = (params, isBatch = false) => {
     return `${batchEnv}${envVars} npx playwright test ${params.path} --headed`;
 };
 
-const startTest = (testCommand, label) => {
+const startTest = (testCommand, label, onComplete) => {
     console.log(`Starting ${label}`);
 
     const child = spawn('/bin/sh', ['-lc', testCommand], {
@@ -77,19 +178,53 @@ const startTest = (testCommand, label) => {
     child.stderr.on('data', (output) => {
         process.stderr.write(`[${label}] ${output}`);
     });
+    let completed = false;
+    const complete = (code, signal) => {
+        if (!completed) {
+            completed = true;
+            onComplete(code, signal);
+        }
+    };
+
     child.on('error', (error) => {
         console.error(`Unable to start ${label}:`, error);
+        complete(1);
     });
     child.on('close', (code, signal) => {
         console.log(`${label} exited with code ${code}${signal ? ` (signal: ${signal})` : ''}`);
+        complete(code, signal);
     });
 };
 
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get('/config/test-data', (_req, res) => {
+    const data = readLocalTestData();
+    return res.json({configured: Boolean(data), data: data || {}});
+});
+
+app.put('/config/test-data', (req, res) => {
+    try {
+        const data = pickTestDataFields(req.body && req.body.data ? req.body.data : {});
+        fs.mkdirSync(localConfigDirectory, {recursive: true});
+        fs.writeFileSync(localTestDataPath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+        return res.json({message: 'Local test-data defaults saved', data});
+    } catch (error) {
+        console.error('Unable to save local test-data defaults:', error);
+        return res.status(400).json({error: error.message || 'Unable to save local test-data defaults'});
+    }
+});
+
+app.get('/test-status', (_req, res) => {
+    return res.json(getRunStatus());
+});
+
 app.post('/run-tests', (req, res) => {
     try {
+        if (activeRun && activeRun.status === 'running') {
+            return res.status(409).json({error: 'A test run is already active', ...getRunStatus()});
+        }
         const {
             email,
             password,
@@ -115,6 +250,7 @@ app.post('/run-tests', (req, res) => {
             address,
             city,
             zip,
+            randomizeIdentity,
             failEligibility,
             skipEligibility,
             prematureStop,
@@ -123,15 +259,26 @@ app.post('/run-tests', (req, res) => {
             businessEin,
             businessPhone,
             businessIncorporationDate,
+            randomizeBusinessIdentity,
             businessAddress,
             businessCity,
             businessState,
-            businessZip
+            businessZip,
+            businessOwnerPercentage,
+            relatedParties
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
         if (!path) {
             return res.status(400).json({error: `Unsupported test type: ${testType}`});
+        }
+
+        const normalizedRelatedParties = normalizeRelatedParties(relatedParties);
+        const primaryOwnerPercentage = Number(businessOwnerPercentage || 100);
+        const totalOwnership = primaryOwnerPercentage + normalizedRelatedParties
+            .reduce((total, party) => total + party.ownershipPercentage, 0);
+        if (!Number.isFinite(primaryOwnerPercentage) || primaryOwnerPercentage < 0 || primaryOwnerPercentage > 100 || totalOwnership > 100) {
+            return res.status(400).json({error: 'Applicant and related-party ownership cannot exceed 100%'});
         }
 
         const testCommand = buildTestCommand({
@@ -152,28 +299,33 @@ app.post('/run-tests', (req, res) => {
             firstName,
             lastName,
             phone,
-            dob,
-            ssn,
+            dob: randomizeIdentity ? '' : dob,
+            ssn: randomizeIdentity ? '' : ssn,
             address,
             city,
             zip,
+            randomizeIdentity,
             failEligibility,
             skipEligibility,
             prematureStop,
             businessName,
             businessEntityType,
-            businessEin,
+            businessEin: randomizeBusinessIdentity ? '' : businessEin,
             businessPhone,
-            businessIncorporationDate,
+            businessIncorporationDate: randomizeBusinessIdentity ? '' : businessIncorporationDate,
+            randomizeBusinessIdentity,
             businessAddress,
             businessCity,
             businessState,
             businessZip,
+            businessOwnerPercentage,
+            relatedParties: JSON.stringify(normalizedRelatedParties),
             path
         });
 
-        startTest(testCommand, path);
-        return res.status(202).json({message: 'Test started', path});
+        const run = beginRun({path, count: 1});
+        startTest(testCommand, path, (code, signal) => completeRunProcess(run.id, code, signal));
+        return res.status(202).json({message: 'Test started', path, ...getRunStatus()});
     } catch (error) {
         console.error('Error running tests:', error);
         return res.status(500).json({error: 'Unable to start test'});
@@ -182,6 +334,9 @@ app.post('/run-tests', (req, res) => {
 
 app.post('/run-tests-batch', (req, res) => {
     try {
+        if (activeRun && activeRun.status === 'running') {
+            return res.status(409).json({error: 'A test run is already active', ...getRunStatus()});
+        }
         const {
             email,
             password,
@@ -215,10 +370,13 @@ app.post('/run-tests-batch', (req, res) => {
             businessEin,
             businessPhone,
             businessIncorporationDate,
+            randomizeBusinessIdentity,
             businessAddress,
             businessCity,
             businessState,
-            businessZip
+            businessZip,
+            businessOwnerPercentage,
+            relatedParties
         } = req.body;
 
         const path = getUrlPath(testType, isPrefill);
@@ -229,6 +387,15 @@ app.post('/run-tests-batch', (req, res) => {
             return res.status(400).json({error: 'At least one batch URL is required'});
         }
 
+        const normalizedRelatedParties = normalizeRelatedParties(relatedParties);
+        const primaryOwnerPercentage = Number(businessOwnerPercentage || 100);
+        const totalOwnership = primaryOwnerPercentage + normalizedRelatedParties
+            .reduce((total, party) => total + party.ownershipPercentage, 0);
+        if (!Number.isFinite(primaryOwnerPercentage) || primaryOwnerPercentage < 0 || primaryOwnerPercentage > 100 || totalOwnership > 100) {
+            return res.status(400).json({error: 'Applicant and related-party ownership cannot exceed 100%'});
+        }
+
+        const run = beginRun({path, count: urls.length});
         urls.forEach((envUrl) => {
             const testCommand = buildTestCommand({
                 email,
@@ -248,8 +415,8 @@ app.post('/run-tests-batch', (req, res) => {
                 firstName,
                 lastName,
                 phone,
-                dob,
-                ssn,
+                dob: randomizeIdentity ? '' : dob,
+                ssn: randomizeIdentity ? '' : ssn,
                 address,
                 city,
                 zip,
@@ -258,18 +425,21 @@ app.post('/run-tests-batch', (req, res) => {
                 prematureStop,
                 businessName,
                 businessEntityType,
-                businessEin,
+                businessEin: randomizeBusinessIdentity ? '' : businessEin,
                 businessPhone,
-                businessIncorporationDate,
+                businessIncorporationDate: randomizeBusinessIdentity ? '' : businessIncorporationDate,
+                randomizeBusinessIdentity,
                 businessAddress,
                 businessCity,
                 businessState,
                 businessZip,
+                businessOwnerPercentage,
+                relatedParties: JSON.stringify(normalizedRelatedParties),
                 path
             }, true);
-            startTest(testCommand, `${path} (${envUrl})`);
+            startTest(testCommand, `${path} (${envUrl})`, (code, signal) => completeRunProcess(run.id, code, signal));
         });
-        return res.status(202).json({message: 'Batch tests started', path, count: urls.length});
+        return res.status(202).json({message: 'Batch tests started', path, count: urls.length, ...getRunStatus()});
     } catch (error) {
         console.error('Error running batch tests:', error);
         return res.status(500).json({error: 'Unable to start batch tests'});
