@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="text-center">Create Sample Loan</h1>
+    <h1 class="text-center">Create Consumer Application</h1>
     <section class="setup-card" :class="{'setup-card--saved': hasSavedTestData}">
       <div>
         <strong>{{ hasSavedTestData ? 'Local test-data defaults are active' : 'First-time setup' }}</strong>
