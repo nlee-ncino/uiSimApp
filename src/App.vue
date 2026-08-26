@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="text-center">Create Sample Consumer Loan</h1>
+    <h1 class="text-center">Create Sample Loan</h1>
     <section class="setup-card" :class="{'setup-card--saved': hasSavedTestData}">
       <div>
         <strong>{{ hasSavedTestData ? 'Local test-data defaults are active' : 'First-time setup' }}</strong>
@@ -341,6 +341,7 @@
       <div class="mt-3" v-if="sections.prematureStop">
         <label for="prematureStop">Select Stop Page:</label>
         <select class="form-control" id="prematureStop" v-model="formData.prematureStop">
+          <option value="">Don't Stop Early</option>
           <option value="login">Login Page</option>
           <option value="productSelection">Product Selection Page</option>
           <template v-if="formData.companyType === 'consumer'">
