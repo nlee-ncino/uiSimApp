@@ -5,7 +5,7 @@ import {loginNew} from "../../flows/login/loginNew";
 import {kycNew} from "../../flows/kyc/kycNew";
 import {incomeNew} from "../../flows/income/incomeNew";
 import {coappInfo} from "../../flows/coappInfo";
-import {test} from '../testSetup'
+import {test, waitForTestWindowToClose} from '../testSetup'
 
 test("newUnsecuredLoan", async ({page}) => {
     test.setTimeout(0);
@@ -22,6 +22,5 @@ test("newUnsecuredLoan", async ({page}) => {
         await coappInfo(page);
     }
     await unsecuredTermNeeds(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

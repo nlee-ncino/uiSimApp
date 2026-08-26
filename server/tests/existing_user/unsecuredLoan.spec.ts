@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {loginPrefill} from "../../flows/login/loginPrefill";
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
@@ -22,6 +22,5 @@ test("unsecuredLoanPrefill", async ({page}) => {
         await coappInfo(page);
     }
     await unsecuredTermNeeds(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

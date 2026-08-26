@@ -1,4 +1,4 @@
-import {test} from '../testSetup'
+import {test, waitForTestWindowToClose} from '../testSetup'
 import {eligibility} from "../../flows/eligibility";
 import {acceptDisclosures} from "../../vars/utilMethods";
 import {loginPrefill} from "../../flows/login/loginPrefill";
@@ -22,6 +22,5 @@ test("creditCardPrefill", async ({page}) => {
 
     await page.getByRole("button", {name: "Save & Continue"}).click();
     await page.waitForTimeout(200);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

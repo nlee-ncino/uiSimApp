@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
 import {autoDetails} from "../../flows/auto/autoDetails";
@@ -24,6 +24,5 @@ test("newUsedAuto", async ({page}) => {
     }
     await autoDetails(page);
     await autoNeeds(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

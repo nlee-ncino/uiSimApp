@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
 import {letterOfCreditNeeds} from "../../flows/letterOfCreditNeeds";
@@ -23,6 +23,5 @@ test("newLetterOfCredit", async ({page}) => {
         await coappInfo(page);
     }
     await letterOfCreditNeeds(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

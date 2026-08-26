@@ -1,4 +1,4 @@
-import {test} from '../testSetup';
+import {test, waitForTestWindowToClose} from '../testSetup';
 import {loginNew} from "../../flows/login/loginNew";
 import {eligibility} from "../../flows/eligibility";
 import {productSelection} from "../../flows/productSelection";
@@ -14,6 +14,5 @@ test("newUserLoanToKYC", async ({page}) => {
     await eligibility(page);
     await productSelection(page, process.env.HASCOAPPLICANT);
     await kycNewPartial(page);
-    await new Promise(() => {
-    });
+    await waitForTestWindowToClose(page);
 });

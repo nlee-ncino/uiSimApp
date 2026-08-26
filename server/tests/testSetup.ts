@@ -52,8 +52,24 @@ export const test = base.extend({
         }
 
         await addStealthScripts(context);
-        await use(context);
+        try {
+            await use(context);
+        } finally {
+            await context.close().catch(() => {});
+        }
     },
 });
+
+export const waitForTestWindowToClose = async (page: any) => {
+    if (page.isClosed()) {
+        return;
+    }
+
+    await page.waitForEvent('close', {timeout: 0}).catch((error: unknown) => {
+        if (!page.isClosed()) {
+            throw error;
+        }
+    });
+};
 
 export {expect} from '@playwright/test';
