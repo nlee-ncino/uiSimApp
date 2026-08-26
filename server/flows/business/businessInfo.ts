@@ -1,9 +1,11 @@
+import {generateRandomEin, generateRandomIncorporationDate} from "../../vars/utilMethods";
+
 export const businessInfo = async (page: any) => {
     const entityType = process.env.BUSINESSENTITYTYPE || 'llc';
     const businessName = process.env.BUSINESSNAME || 'Acme Test LLC';
-    const ein = process.env.BUSINESSEIN || '12-3456789';
+    const ein = process.env.BUSINESSEIN || generateRandomEin();
     const businessPhone = process.env.BUSINESSPHONE || '(234) 242-3423';
-    const incorporationDate = process.env.BUSINESSINCORPORATIONDATE || '01/01/2010';
+    const incorporationDate = process.env.BUSINESSINCORPORATIONDATE || generateRandomIncorporationDate();
     const businessAddress = process.env.BUSINESSADDRESS || '200201 Test Rd';
     const businessCity = process.env.BUSINESSCITY || 'Fantasy Island';
     const businessState = process.env.BUSINESSSTATE || 'NC';

@@ -8,8 +8,7 @@ export const businessLogin = async (page: any, url: any) => {
     const emailField = page.locator('[data-cy="What is your email?-field"]');
     await emailField.waitFor({state: 'visible', timeout: 30000});
 
-    const randomEmail = generateRandomEmail();
-    const email = process.env.EMAIL ? process.env.EMAIL : randomEmail;
+    const email = generateRandomEmail(process.env.EMAIL, process.env.FIRSTNAME, process.env.LASTNAME, true);
     console.log("email: ", email);
 
     await emailField.click();

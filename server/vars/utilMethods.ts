@@ -1,10 +1,65 @@
-export const generateRandomEmail = (): string => {
-    const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
-    return `nathaniel.lee+${randomNumber}@ncino.com`;
+export const generateRandomEmail = (emailTemplate = '', firstName = '', lastName = '', includeNameInModifier = false): string => {
+    const randomSuffix = String(Math.floor(1000 + Math.random() * 9000));
+    const normalizedName = [firstName, lastName]
+        .map((name) => name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .filter(Boolean)
+        .join('.') || 'test.user';
+    const hasEmailBase = Boolean(emailTemplate.trim());
+    const template = emailTemplate.trim() || `${normalizedName}@ncino.com`;
+    const modifierSuffix = includeNameInModifier && hasEmailBase
+        ? `${normalizedName.replace(/\./g, '')}${randomSuffix}`
+        : randomSuffix;
+
+    if (template.includes('{random}')) {
+        return template.replaceAll('{random}', modifierSuffix);
+    }
+
+    const atIndex = template.lastIndexOf('@');
+    if (atIndex > 0) {
+        const localPart = template.slice(0, atIndex);
+        const modifier = localPart.includes('+') ? modifierSuffix : `+${modifierSuffix}`;
+        return `${localPart}${modifier}${template.slice(atIndex)}`;
+    }
+
+    return `${template}+${randomSuffix}@ncino.com`;
 };
 
 export const generateRandomResidentNumber = (): string => {
     return Math.floor(100000000 + Math.random() * 900000000).toString();
+};
+
+export const generateRandomSsn = (): string => {
+    let area = Math.floor(100 + Math.random() * 799);
+    if (area === 666) area = 665;
+    const group = Math.floor(10 + Math.random() * 90);
+    const serial = Math.floor(1000 + Math.random() * 9000);
+    return `${area}-${group}-${serial}`;
+};
+
+export const generateRandomDob = (): string => {
+    const now = new Date();
+    const oldestBirthDate = new Date(now.getFullYear() - 65, now.getMonth(), now.getDate());
+    const youngestBirthDate = new Date(now.getFullYear() - 21, now.getMonth(), now.getDate());
+    const birthDate = new Date(oldestBirthDate.getTime() + Math.random() * (youngestBirthDate.getTime() - oldestBirthDate.getTime()));
+    const month = String(birthDate.getMonth() + 1).padStart(2, '0');
+    const day = String(birthDate.getDate()).padStart(2, '0');
+    return `${month}/${day}/${birthDate.getFullYear()}`;
+};
+
+export const generateRandomEin = (): string => {
+    const prefix = Math.floor(10 + Math.random() * 90);
+    const suffix = String(Math.floor(1000000 + Math.random() * 9000000));
+    return `${prefix}-${suffix}`;
+};
+
+export const generateRandomIncorporationDate = (): string => {
+    const now = new Date();
+    const oldestDate = new Date(now.getFullYear() - 20, now.getMonth(), now.getDate());
+    const newestDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    const incorporationDate = new Date(oldestDate.getTime() + Math.random() * (newestDate.getTime() - oldestDate.getTime()));
+    const month = String(incorporationDate.getMonth() + 1).padStart(2, '0');
+    const day = String(incorporationDate.getDate()).padStart(2, '0');
+    return `${month}/${day}/${incorporationDate.getFullYear()}`;
 };
 
 export const acceptDisclosures = async (page: any) => {
@@ -146,6 +201,3 @@ export function formatPhoneNumber(raw: string): string {
 
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
-
-
-
