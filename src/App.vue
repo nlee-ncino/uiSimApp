@@ -14,13 +14,18 @@
       </button>
     </section>
 
-    <div v-if="isRunning" class="run-status" role="status" aria-live="polite">
-      <span class="run-status__spinner" aria-hidden="true"></span>
+    <div v-if="isRunning" class="run-status" :class="{'run-status--waiting': runStatus.waitingForInput}" role="status" aria-live="polite">
+      <span v-if="runStatus.waitingForInput" class="run-status__waiting-dots" aria-label="Waiting for your input">
+        <span class="run-status__waiting-dot"></span>
+        <span class="run-status__waiting-dot"></span>
+        <span class="run-status__waiting-dot"></span>
+      </span>
+      <span v-else class="run-status__spinner" aria-hidden="true"></span>
       <div>
-        <strong>Test run in progress</strong>
-        <span>{{ runStatus.path }}<template v-if="runStatus.total > 1"> · {{ runStatus.completed }}/{{ runStatus.total }} complete</template></span>
+        <strong>{{ runStatus.waitingForInput ? 'Waiting for your input' : 'Test run in progress' }}</strong>
+        <span>{{ runStatus.path }}<template v-if="runStatus.total > 1"> · {{ runStatus.completed }}/{{ runStatus.total }} complete</template><template v-if="runStatus.waitingForInput"> · Review the browser and continue manually</template></span>
       </div>
-      <span class="run-status__pulse" aria-hidden="true">Running</span>
+      <span class="run-status__pulse" aria-hidden="true">{{ runStatus.waitingForInput ? 'Input needed' : 'Running' }}</span>
       <button type="button" class="btn btn-outline-danger run-status__cancel" @click="cancelTests" :disabled="isCancelling">
         {{ isCancelling ? 'Cancelling…' : 'Cancel' }}
       </button>
@@ -48,6 +53,7 @@
           </template>
           <template v-else>
             <option value="businessDeposit">Business Deposit</option>
+            <option value="businessLoan">Business Line of Credit / Loan</option>
           </template>
         </select>
       </div>
@@ -291,6 +297,27 @@
           <input type="text" class="form-control" id="businessZip" v-model="formData.businessZip"/>
         </div>
 
+        <div v-if="formData.testType === 'businessLoan'" class="loan-amount-card">
+          <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="randomizeBusinessLoanAmount" v-model="formData.randomizeBusinessLoanAmount"/>
+            <label class="form-check-label" for="randomizeBusinessLoanAmount">Randomize the loan amount from $10,000 to $50,000</label>
+          </div>
+          <div class="form-group">
+            <label for="businessLoanAmount">Business Loan Amount: <span class="text-muted">Default is $50,000</span></label>
+            <input
+              type="number"
+              class="form-control"
+              id="businessLoanAmount"
+              v-model.number="formData.businessLoanAmount"
+              min="10000"
+              max="50000"
+              step="500"
+              :disabled="formData.randomizeBusinessLoanAmount"
+            />
+            <small class="form-text text-muted">Use whole numbers in $500 increments, from $10,000 to $50,000.</small>
+          </div>
+        </div>
+
         <div class="ownership-tree">
           <div class="ownership-tree__heading">Ownership & Related Parties</div>
           <div class="ownership-tree__branch">
@@ -410,6 +437,8 @@
             <option value="businessInfo">Business Info Page</option>
             <option value="businessYourInfo">Business Your Info Page</option>
             <option value="businessYourInfoAddress">Business Your Info Address Page</option>
+            <option v-if="formData.testType === 'businessLoan'" value="managingController">Managing Controller Page</option>
+            <option v-if="formData.testType === 'businessLoan'" value="businessLoanDetails">Business Loan Details Page</option>
           </template>
         </select>
       </div>
@@ -474,7 +503,8 @@ const applicantProfileFields = [
 const businessProfileFields = [
   'businessName', 'businessEntityType', 'randomizeBusinessIdentity', 'businessEin',
   'businessPhone', 'businessIncorporationDate', 'businessAddress', 'businessCity',
-  'businessState', 'businessZip', 'businessOwnerPercentage'
+  'businessState', 'businessZip', 'businessLoanAmount', 'randomizeBusinessLoanAmount',
+  'businessOwnerPercentage'
 ];
 const pickProfileFields = (data, fields) => fields.reduce((profileData, field) => {
   if (Object.prototype.hasOwnProperty.call(data || {}, field)) profileData[field] = data[field];
@@ -542,6 +572,8 @@ const getDefaultFormData = () => ({
   businessCity: 'Fantasy Island',
   businessState: 'NC',
   businessZip: '60750',
+  businessLoanAmount: 50000,
+  randomizeBusinessLoanAmount: false,
   businessOwnerPercentage: '100',
   relatedParties: []
 });
@@ -872,6 +904,8 @@ export default {
         businessCity: this.formData.businessCity,
         businessState: this.formData.businessState,
         businessZip: this.formData.businessZip,
+        businessLoanAmount: this.formData.businessLoanAmount,
+        randomizeBusinessLoanAmount: this.formData.randomizeBusinessLoanAmount,
         businessOwnerPercentage: this.formData.businessOwnerPercentage,
         relatedParties: this.formData.relatedParties.map((party) => {
           const payloadParty = Object.assign({}, party);
@@ -982,6 +1016,11 @@ body {
   animation: status-shimmer 2.4s linear infinite;
 }
 
+.run-status--waiting {
+  background: linear-gradient(110deg, #6c3f91, #9b59b6, #6c3f91);
+  box-shadow: 0 4px 14px rgba(108, 63, 145, 0.3);
+}
+
 .run-status > div {
   flex: 1;
 }
@@ -1009,6 +1048,32 @@ body {
   margin-right: 0.5rem;
   vertical-align: -0.125rem;
   border-width: 2px;
+}
+
+.run-status__waiting-dots {
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.run-status__waiting-dot {
+  display: inline-block !important;
+  width: 0.35rem;
+  height: 0.35rem;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: waiting-dot 1.1s ease-in-out infinite;
+}
+
+.run-status__waiting-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.run-status__waiting-dot:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 .run-status__pulse {
@@ -1210,6 +1275,11 @@ button[type="submit"] {
 
 @keyframes status-shimmer {
   to { background-position: -200% 0; }
+}
+
+@keyframes waiting-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.55; }
+  30% { transform: translateY(-0.3rem); opacity: 1; }
 }
 
 @media (max-width: 575px) {

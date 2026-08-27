@@ -18,8 +18,14 @@ const applicantProfileFields = [
 const businessProfileFields = [
     'businessName',
     'businessEntityType', 'randomizeBusinessIdentity', 'businessEin', 'businessPhone', 'businessIncorporationDate',
-    'businessAddress', 'businessCity', 'businessState', 'businessZip', 'businessOwnerPercentage'
+    'businessAddress', 'businessCity', 'businessState', 'businessZip', 'businessLoanAmount',
+    'randomizeBusinessLoanAmount', 'businessOwnerPercentage'
 ];
+const DEFAULT_BUSINESS_LOAN_AMOUNT = 50000;
+const MIN_BUSINESS_LOAN_AMOUNT = 10000;
+const MAX_BUSINESS_LOAN_AMOUNT = 50000;
+const BUSINESS_LOAN_AMOUNT_INCREMENT = 500;
+const WAITING_FOR_INPUT_MARKER = 'UI_SIM_WAITING_FOR_INPUT';
 let activeRun = null;
 
 const readLocalTestData = () => {
@@ -62,9 +68,22 @@ const normalizeRelatedParties = (relatedParties) => {
     });
 };
 
+const normalizeBusinessLoanAmount = (amount) => {
+    const normalizedAmount = Number(amount === undefined || amount === null || amount === ''
+        ? DEFAULT_BUSINESS_LOAN_AMOUNT
+        : amount);
+    if (!Number.isInteger(normalizedAmount) ||
+        normalizedAmount < MIN_BUSINESS_LOAN_AMOUNT ||
+        normalizedAmount > MAX_BUSINESS_LOAN_AMOUNT ||
+        normalizedAmount % BUSINESS_LOAN_AMOUNT_INCREMENT !== 0) {
+        throw new Error('Business loan amount must be a whole number from 10000 to 50000 in increments of 500');
+    }
+    return String(normalizedAmount);
+};
+
 const pickProfileFields = (data, fields) => fields.reduce((result, field) => {
     const value = data && data[field];
-    if (typeof value === 'string' || typeof value === 'boolean') {
+    if (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
         result[field] = value;
     }
     return result;
@@ -160,6 +179,7 @@ const beginRun = ({path, count}) => {
         total: count,
         completed: 0,
         startedAt: new Date().toISOString(),
+        waitingForInput: false,
         children: []
     };
     return activeRun;
@@ -244,6 +264,8 @@ const getUrlPath = (testType, isPrefill) => {
         }
     } else if (testType === "businessDeposit") {
         path = "tests/new_user/newBusinessDeposit.spec.ts";
+    } else if (testType === "businessLoan") {
+        path = "tests/new_user/newBusinessLoan.spec.ts";
     }
     return path;
 };
@@ -276,6 +298,9 @@ const startTest = (testCommand, label, onComplete) => {
     }
 
     child.stdout.on('data', (output) => {
+        if (activeRun && activeRun.status === 'running' && output.toString().includes(WAITING_FOR_INPUT_MARKER)) {
+            activeRun.waitingForInput = true;
+        }
         process.stdout.write(`[${label}] ${output}`);
     });
     child.stderr.on('data', (output) => {
@@ -380,6 +405,8 @@ app.post('/run-tests', (req, res) => {
             businessCity,
             businessState,
             businessZip,
+            businessLoanAmount,
+            randomizeBusinessLoanAmount,
             businessOwnerPercentage,
             relatedParties
         } = req.body;
@@ -388,6 +415,10 @@ app.post('/run-tests', (req, res) => {
         if (!path) {
             return res.status(400).json({error: `Unsupported test type: ${testType}`});
         }
+
+        const normalizedBusinessLoanAmount = testType === 'businessLoan'
+            ? normalizeBusinessLoanAmount(businessLoanAmount)
+            : undefined;
 
         const normalizedRelatedParties = normalizeRelatedParties(relatedParties);
         const primaryOwnerPercentage = Number(businessOwnerPercentage || 100);
@@ -434,6 +465,8 @@ app.post('/run-tests', (req, res) => {
             businessCity,
             businessState,
             businessZip,
+            businessLoanAmount: normalizedBusinessLoanAmount,
+            randomizeBusinessLoanAmount,
             businessOwnerPercentage,
             relatedParties: JSON.stringify(normalizedRelatedParties),
             path
@@ -491,6 +524,8 @@ app.post('/run-tests-batch', (req, res) => {
             businessCity,
             businessState,
             businessZip,
+            businessLoanAmount,
+            randomizeBusinessLoanAmount,
             businessOwnerPercentage,
             relatedParties
         } = req.body;
@@ -502,6 +537,10 @@ app.post('/run-tests-batch', (req, res) => {
         if (!Array.isArray(urls) || urls.length === 0) {
             return res.status(400).json({error: 'At least one batch URL is required'});
         }
+
+        const normalizedBusinessLoanAmount = testType === 'businessLoan'
+            ? normalizeBusinessLoanAmount(businessLoanAmount)
+            : undefined;
 
         const normalizedRelatedParties = normalizeRelatedParties(relatedParties);
         const primaryOwnerPercentage = Number(businessOwnerPercentage || 100);
@@ -549,6 +588,8 @@ app.post('/run-tests-batch', (req, res) => {
                 businessCity,
                 businessState,
                 businessZip,
+                businessLoanAmount: normalizedBusinessLoanAmount,
+                randomizeBusinessLoanAmount,
                 businessOwnerPercentage,
                 relatedParties: JSON.stringify(normalizedRelatedParties),
                 path

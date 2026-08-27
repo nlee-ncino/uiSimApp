@@ -26,10 +26,13 @@ Open http://localhost:4000 after both the client and server have started.
 - Business simulations generate a unique EIN and incorporation date by
   default. Turn off **Generate a unique EIN and incorporation date** to
   provide fixed values instead.
-- For business deposit runs, set the primary applicant's ownership percentage
+- For business deposit and business loan runs, set the primary applicant's ownership percentage
   and add related parties or beneficial owners as needed. Each related party
   requires a first name, last name, and ownership percentage of at least 20%;
   combined ownership cannot exceed 100%.
+- Business loan runs default to a $50,000 loan amount. You can enter a whole-dollar
+  amount from $10,000 to $50,000 in $500 increments, or enable randomization for a
+  new valid amount on each run.
 
 ## Run simulations
 
