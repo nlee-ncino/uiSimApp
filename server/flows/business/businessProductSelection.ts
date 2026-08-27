@@ -1,7 +1,7 @@
 export const businessProductSelection = async (page: any) => {
     await page.waitForURL(
         (url: URL) => !/Evaluating_eligibility|Preparing_application/i.test(url.toString()),
-        {timeout: 60000}
+        {timeout: 50000}
     ).catch(() => {});
 
     const continueBtn = page.locator('button[data-cy="continue-btn"]').first();
