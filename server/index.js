@@ -83,9 +83,32 @@ const beginRun = ({path, count}) => {
         path,
         total: count,
         completed: 0,
-        startedAt: new Date().toISOString()
+        startedAt: new Date().toISOString(),
+        children: []
     };
     return activeRun;
+};
+
+const cancelActiveRun = () => {
+    if (!activeRun || activeRun.status !== 'running') {
+        return false;
+    }
+    (activeRun.children || []).forEach((child) => {
+        try {
+            process.kill(-child.pid, 'SIGTERM');
+        } catch (error) {
+            try {
+                child.kill('SIGTERM');
+            } catch (innerError) {
+                console.error('Unable to terminate test process:', innerError);
+            }
+        }
+    });
+    spawn('killall', ['Google Chrome for Testing'], {stdio: 'ignore'})
+        .on('error', () => {});
+    activeRun.status = 'cancelled';
+    activeRun.finishedAt = new Date().toISOString();
+    return true;
 };
 
 const completeRunProcess = (runId, code, signal) => {
@@ -169,8 +192,12 @@ const startTest = (testCommand, label, onComplete) => {
 
     const child = spawn('/bin/sh', ['-lc', testCommand], {
         cwd: __dirname,
-        stdio: ['ignore', 'pipe', 'pipe']
+        stdio: ['ignore', 'pipe', 'pipe'],
+        detached: true
     });
+    if (activeRun && Array.isArray(activeRun.children)) {
+        activeRun.children.push(child);
+    }
 
     child.stdout.on('data', (output) => {
         process.stdout.write(`[${label}] ${output}`);
@@ -218,6 +245,14 @@ app.put('/config/test-data', (req, res) => {
 
 app.get('/test-status', (_req, res) => {
     return res.json(getRunStatus());
+});
+
+app.post('/cancel-tests', (_req, res) => {
+    const cancelled = cancelActiveRun();
+    if (!cancelled) {
+        return res.status(409).json({error: 'No active test run to cancel', ...getRunStatus()});
+    }
+    return res.json({message: 'Test run cancelled', ...getRunStatus()});
 });
 
 app.post('/run-tests', (req, res) => {

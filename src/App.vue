@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="text-center">Create Consumer Application</h1>
+    <h1 class="text-center">Create {{ formData.companyType === 'business' ? 'Business' : 'Consumer' }} Application</h1>
     <section class="setup-card" :class="{'setup-card--saved': hasSavedTestData}">
       <div>
         <strong>{{ hasSavedTestData ? 'Local test-data defaults are active' : 'First-time setup' }}</strong>
@@ -21,15 +21,43 @@
         <span>{{ runStatus.path }}<template v-if="runStatus.total > 1"> · {{ runStatus.completed }}/{{ runStatus.total }} complete</template></span>
       </div>
       <span class="run-status__pulse" aria-hidden="true">Running</span>
+      <button type="button" class="btn btn-outline-danger run-status__cancel" @click="cancelTests" :disabled="isCancelling">
+        {{ isCancelling ? 'Cancelling…' : 'Cancel' }}
+      </button>
     </div>
 
     <form id="testForm" class="mt-4" @submit.prevent="runTests">
-      <div class="form-group form-check">
+      <div class="form-group">
+        <label for="companyType" style="font-weight: 700;">Company Type:</label>
+        <select class="form-control" id="companyType" v-model="formData.companyType" @change="onCompanyTypeChange" required>
+          <option value="consumer">Consumer</option>
+          <option value="business">Business</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="testType">Select Test Type:</label>
+        <select class="form-control" id="testType" v-model="formData.testType" required>
+          <template v-if="formData.companyType === 'consumer'">
+            <option value="loanToKYC">Unsecured Loan To KYC</option>
+            <option value="unsecuredTerm">Unsecured Term Loan</option>
+            <option value="letterOfCredit">Letter of Credit</option>
+            <option value="auto">Used Auto Loan</option>
+            <option value="heloc">HELOC (Home Equity Line of Credit)</option>
+            <option value="creditCard">Credit Card</option>
+          </template>
+          <template v-else>
+            <option value="businessDeposit">Business Deposit</option>
+          </template>
+        </select>
+      </div>
+
+      <div class="form-group form-check" v-if="formData.companyType === 'consumer'">
         <input type="checkbox" class="form-check-input" id="hasCoApplicant" v-model="formData.hasCoApplicant"/>
         <label class="form-check-label" for="hasCoApplicant">Add Co-Applicant (email is Nathaniel.lee+{random_num}@ncino.com)</label>
       </div>
 
-      <div class="form-group" v-if="formData.hasCoApplicant">
+      <div class="form-group" v-if="formData.companyType === 'consumer' && formData.hasCoApplicant">
         <a class="d-flex align-items-center" @click="toggleSection('customCoApp')"
            style="color: black; text-decoration: none; cursor: pointer;">
           <span class="mr-2">{{ sections.customCoApp ? '▼' : '▶' }}</span>
@@ -37,7 +65,7 @@
         </a>
       </div>
 
-      <div class="mt-3" v-if="formData.hasCoApplicant && sections.customCoApp">
+      <div class="mt-3" v-if="formData.companyType === 'consumer' && formData.hasCoApplicant && sections.customCoApp">
         <div class="form-group">
           <label for="coappFirstName">Co-Applicant First Name: <span class="text-muted">Default is NateCoapp</span></label>
           <input type="text" class="form-control" id="coappFirstName" v-model="formData.coappFirstName"/>
@@ -177,31 +205,6 @@
           <label for="zip">Zipcode: <span class="text-muted">Default is 60750</span></label>
           <input type="text" class="form-control" id="zip" v-model="formData.zip"/>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label for="companyType">Company Type:</label>
-        <select class="form-control" id="companyType" v-model="formData.companyType" @change="onCompanyTypeChange" required>
-          <option value="consumer">Consumer</option>
-          <option value="business">Business</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="testType">Select Test Type:</label>
-        <select class="form-control" id="testType" v-model="formData.testType" required>
-          <template v-if="formData.companyType === 'consumer'">
-            <option value="loanToKYC">Unsecured Loan To KYC</option>
-            <option value="unsecuredTerm">Unsecured Term Loan</option>
-            <option value="letterOfCredit">Letter of Credit</option>
-            <option value="auto">Used Auto Loan</option>
-            <option value="heloc">HELOC (Home Equity Line of Credit)</option>
-            <option value="creditCard">Credit Card</option>
-          </template>
-          <template v-else>
-            <option value="businessDeposit">Business Deposit</option>
-          </template>
-        </select>
       </div>
 
       <div class="form-group" v-if="formData.companyType === 'business'">
@@ -472,6 +475,7 @@ export default {
       hasSavedTestData: false,
       isSavingDefaults: false,
       isRunning: false,
+      isCancelling: false,
       runStatus: {},
       statusTimer: null,
       partyExpanded: {}
@@ -552,6 +556,9 @@ export default {
     onCompanyTypeChange() {
       this.formData.testType = this.formData.companyType === 'business' ? 'businessDeposit' : 'loanToKYC';
       this.formData.prematureStop = '';
+      if (this.formData.companyType === 'business') {
+        this.formData.hasCoApplicant = false;
+      }
     },
     async loadTestDataDefaults() {
       try {
@@ -596,7 +603,25 @@ export default {
         const response = await fetch(serverUrl + '/test-status');
         if (response.ok) this.applyRunStatus(await response.json());
       } catch (_error) {
-        // The normal run request will show a connection error if the server is unavailable.
+        void _error;
+      }
+    },
+    async cancelTests() {
+      if (!this.isRunning || this.isCancelling) return;
+      this.isCancelling = true;
+      try {
+        const response = await fetch(serverUrl + '/cancel-tests', {method: 'POST'});
+        const result = await response.json();
+        if (response.ok) {
+          this.applyRunStatus(result);
+          this.output = 'Test run cancelled.';
+        } else {
+          this.output = result.error || 'Unable to cancel test run.';
+        }
+      } catch (error) {
+        this.output = `Unable to cancel test run: ${error.message}`;
+      } finally {
+        this.isCancelling = false;
       }
     },
     getBasePayload() {
@@ -785,6 +810,29 @@ body {
   font-weight: 700;
   letter-spacing: 0.03em;
   animation: pulse 1.25s ease-in-out infinite;
+}
+
+.run-status__cancel {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.run-status__cancel:hover:not(:disabled) {
+  color: #0759aa;
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.run-status__cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .run-button:disabled {
