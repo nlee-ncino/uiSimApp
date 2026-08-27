@@ -131,6 +131,31 @@
           <label for="phone">Phone: <span class="text-muted">Default is (234) 242-3423</span></label>
           <input type="tel" inputmode="numeric" maxlength="14" class="form-control" id="phone" :value="formData.phone" @input="formatPhoneField('phone', $event)"/>
         </div>
+        <div class="default-profile-manager">
+          <template v-if="applicantDefaults.length">
+            <label for="applicantDefault">Saved applicant</label>
+            <div class="default-profile-manager__controls">
+              <select id="applicantDefault" class="form-control" v-model="selectedApplicantDefaultId" @change="selectApplicantDefault">
+                <option v-for="profile in applicantDefaults" :key="profile.id" :value="profile.id">{{ profile.name }}</option>
+              </select>
+              <div class="default-profile-manager__actions">
+                <button v-if="applicantDefaultHasChanges" type="button" class="btn btn-outline-primary" @click="saveApplicantDefault" :disabled="isSavingDefaults || isRunning">
+                  {{ isSavingDefaults ? 'Saving…' : 'Update Applicant' }}
+                </button>
+                <button v-if="applicantDefaultHasChanges" type="button" class="btn btn-outline-secondary" @click="saveApplicantAsNewDefault" :disabled="isSavingDefaults || isRunning">
+                  Save as New Applicant
+                </button>
+              </div>
+            </div>
+            <small class="form-text text-muted">The saved applicant is prefilled above. Change any applicant or KYC field to update it or save the changes as another applicant.</small>
+          </template>
+          <template v-else>
+            <button type="button" class="btn btn-outline-primary" @click="saveApplicantDefault" :disabled="isSavingDefaults || isRunning">
+              {{ isSavingDefaults ? 'Saving…' : 'Save Applicant as Default' }}
+            </button>
+            <small class="form-text text-muted">Save the applicant details and KYC information currently entered above.</small>
+          </template>
+        </div>
       </div>
 
       <div class="form-group">
@@ -331,6 +356,31 @@
             </p>
           </div>
         </div>
+        <div class="default-profile-manager">
+          <template v-if="businessDefaults.length">
+            <label for="businessDefault">Saved business</label>
+            <div class="default-profile-manager__controls">
+              <select id="businessDefault" class="form-control" v-model="selectedBusinessDefaultId" @change="selectBusinessDefault">
+                <option v-for="profile in businessDefaults" :key="profile.id" :value="profile.id">{{ profile.name }}</option>
+              </select>
+              <div class="default-profile-manager__actions">
+                <button v-if="businessDefaultHasChanges" type="button" class="btn btn-outline-primary" @click="saveBusinessDefault" :disabled="isSavingDefaults || isRunning">
+                  {{ isSavingDefaults ? 'Saving…' : 'Update Business' }}
+                </button>
+                <button v-if="businessDefaultHasChanges" type="button" class="btn btn-outline-secondary" @click="saveBusinessAsNewDefault" :disabled="isSavingDefaults || isRunning">
+                  Save as New Business
+                </button>
+              </div>
+            </div>
+            <small class="form-text text-muted">The saved business and its related parties are prefilled above. Change any detail to update it or save the changes as another business.</small>
+          </template>
+          <template v-else>
+            <button type="button" class="btn btn-outline-primary" @click="saveBusinessDefault" :disabled="isSavingDefaults || isRunning">
+              {{ isSavingDefaults ? 'Saving…' : 'Save Business as Default' }}
+            </button>
+            <small class="form-text text-muted">Save the business details and related parties currently entered above.</small>
+          </template>
+        </div>
       </div>
 
       <div class="form-group">
@@ -415,6 +465,42 @@ Unsecured Loan	https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?p
 
 <script>
 const serverUrl = process.env.VUE_APP_SERVER_URL || 'http://localhost:4001';
+const applicantProfileFields = [
+  'email', 'password', 'firstName', 'lastName', 'phone', 'citizenshipStatus',
+  'countryOfCitizenship', 'residencyIssueDate', 'residencyEntryDate', 'residentNumber',
+  'residentHasSsn', 'randomizeIdentity', 'dob', 'ssn', 'address', 'city', 'zip',
+  'hasCoApplicant', 'coappFirstName', 'coappLastName', 'coappPhone', 'coappEmail'
+];
+const businessProfileFields = [
+  'businessName', 'businessEntityType', 'randomizeBusinessIdentity', 'businessEin',
+  'businessPhone', 'businessIncorporationDate', 'businessAddress', 'businessCity',
+  'businessState', 'businessZip', 'businessOwnerPercentage'
+];
+const pickProfileFields = (data, fields) => fields.reduce((profileData, field) => {
+  if (Object.prototype.hasOwnProperty.call(data || {}, field)) profileData[field] = data[field];
+  return profileData;
+}, {});
+const getApplicantProfileName = (data = {}) => [data.firstName, data.lastName]
+  .filter((value) => typeof value === 'string' && value.trim())
+  .map((value) => value.trim())
+  .join(' ') || 'Unnamed applicant';
+const getBusinessProfileName = (data = {}) => typeof data.businessName === 'string' && data.businessName.trim()
+  ? data.businessName.trim()
+  : 'Unnamed business';
+const getLegacyDefaultProfiles = (data) => ({
+  applicantDefaults: [{
+    id: 'legacy-applicant-default',
+    name: getApplicantProfileName(data),
+    data: pickProfileFields(data, applicantProfileFields)
+  }],
+  businessDefaults: [{
+    id: 'legacy-business-default',
+    name: getBusinessProfileName(data),
+    data: Object.assign(pickProfileFields(data, businessProfileFields), {
+      relatedParties: Array.isArray(data && data.relatedParties) ? data.relatedParties : []
+    })
+  }]
+});
 const getDefaultFormData = () => ({
   email: '',
   password: '',
@@ -474,6 +560,10 @@ export default {
       output: '',
       hasSavedTestData: false,
       isSavingDefaults: false,
+      applicantDefaults: [],
+      businessDefaults: [],
+      selectedApplicantDefaultId: '',
+      selectedBusinessDefaultId: '',
       isRunning: false,
       isCancelling: false,
       runStatus: {},
@@ -485,6 +575,14 @@ export default {
     ownershipTotal() {
       return Number(this.formData.businessOwnerPercentage || 0) + this.formData.relatedParties
         .reduce((total, party) => total + Number(party.ownershipPercentage || 0), 0);
+    },
+    applicantDefaultHasChanges() {
+      const selectedProfile = this.applicantDefaults.find((profile) => profile.id === this.selectedApplicantDefaultId);
+      return Boolean(selectedProfile) && JSON.stringify(this.getProfileData(applicantProfileFields)) !== JSON.stringify(selectedProfile.data);
+    },
+    businessDefaultHasChanges() {
+      const selectedProfile = this.businessDefaults.find((profile) => profile.id === this.selectedBusinessDefaultId);
+      return Boolean(selectedProfile) && JSON.stringify(this.getProfileData(businessProfileFields, true)) !== JSON.stringify(selectedProfile.data);
     }
   },
   watch: {
@@ -560,34 +658,145 @@ export default {
         this.formData.hasCoApplicant = false;
       }
     },
+    getProfileData(fields, includeRelatedParties = false) {
+      const data = fields.reduce((profileData, field) => {
+        profileData[field] = this.formData[field];
+        return profileData;
+      }, {});
+      if (includeRelatedParties) {
+        data.relatedParties = this.formData.relatedParties.map((party) => {
+          const profileParty = Object.assign({}, party);
+          delete profileParty.id;
+          return profileParty;
+        });
+      }
+      return data;
+    },
+    makeDefaultProfile(name, data, existingId = '') {
+      return {
+        id: existingId || `default-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        name: name.trim(),
+        data
+      };
+    },
+    getApplicantProfileName() {
+      return getApplicantProfileName(this.formData);
+    },
+    getBusinessProfileName() {
+      return getBusinessProfileName(this.formData);
+    },
+    applyApplicantDefault(profile) {
+      if (!profile) return;
+      this.formData = Object.assign({}, this.formData, profile.data);
+    },
+    applyBusinessDefault(profile) {
+      if (!profile) return;
+      this.formData = Object.assign({}, this.formData, profile.data);
+      this.formData.relatedParties = (this.formData.relatedParties || []).map((party) => this.withRelatedPartyId(party));
+    },
+    selectApplicantDefault() {
+      const profile = this.applicantDefaults.find((candidate) => candidate.id === this.selectedApplicantDefaultId);
+      this.applyApplicantDefault(profile);
+    },
+    selectBusinessDefault() {
+      const profile = this.businessDefaults.find((candidate) => candidate.id === this.selectedBusinessDefaultId);
+      this.applyBusinessDefault(profile);
+    },
+    async saveDefaultProfiles(message) {
+      const response = await fetch(serverUrl + '/config/test-data', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          applicantDefaults: this.applicantDefaults,
+          businessDefaults: this.businessDefaults
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unable to save local defaults');
+      this.hasSavedTestData = result.configured;
+      this.applicantDefaults = result.applicantDefaults;
+      this.businessDefaults = result.businessDefaults;
+      this.output = message;
+    },
+    replaceDefaultProfile(profiles, profile) {
+      const existingIndex = profiles.findIndex((candidate) => candidate.id === profile.id);
+      if (existingIndex === -1) profiles.push(profile);
+      else this.$set(profiles, existingIndex, profile);
+    },
+    async saveTestDataDefaults() {
+      const applicantName = this.getApplicantProfileName();
+      const businessName = this.getBusinessProfileName();
+      const applicantProfile = this.makeDefaultProfile(applicantName, this.getProfileData(applicantProfileFields), this.selectedApplicantDefaultId);
+      const businessProfile = this.makeDefaultProfile(businessName, this.getProfileData(businessProfileFields, true), this.selectedBusinessDefaultId);
+      this.isSavingDefaults = true;
+      try {
+        this.replaceDefaultProfile(this.applicantDefaults, applicantProfile);
+        this.replaceDefaultProfile(this.businessDefaults, businessProfile);
+        await this.saveDefaultProfiles('Local test-data defaults saved');
+        this.selectedApplicantDefaultId = applicantProfile.id;
+        this.selectedBusinessDefaultId = businessProfile.id;
+      } catch (error) {
+        this.output = `Error: ${error.message}`;
+      } finally {
+        this.isSavingDefaults = false;
+      }
+    },
+    async saveApplicantDefault(asNew = false) {
+      this.isSavingDefaults = true;
+      try {
+        const name = this.getApplicantProfileName();
+        const profile = this.makeDefaultProfile(name, this.getProfileData(applicantProfileFields), asNew ? '' : this.selectedApplicantDefaultId);
+        this.replaceDefaultProfile(this.applicantDefaults, profile);
+        await this.saveDefaultProfiles(`Applicant default "${name}" saved.`);
+        this.selectedApplicantDefaultId = profile.id;
+      } catch (error) {
+        this.output = `Error: ${error.message}`;
+      } finally {
+        this.isSavingDefaults = false;
+      }
+    },
+    saveApplicantAsNewDefault() {
+      return this.saveApplicantDefault(true);
+    },
+    async saveBusinessDefault(asNew = false) {
+      this.isSavingDefaults = true;
+      try {
+        const name = this.getBusinessProfileName();
+        const profile = this.makeDefaultProfile(name, this.getProfileData(businessProfileFields, true), asNew ? '' : this.selectedBusinessDefaultId);
+        this.replaceDefaultProfile(this.businessDefaults, profile);
+        await this.saveDefaultProfiles(`Business default "${name}" saved.`);
+        this.selectedBusinessDefaultId = profile.id;
+      } catch (error) {
+        this.output = `Error: ${error.message}`;
+      } finally {
+        this.isSavingDefaults = false;
+      }
+    },
+    saveBusinessAsNewDefault() {
+      return this.saveBusinessDefault(true);
+    },
     async loadTestDataDefaults() {
       try {
         const response = await fetch(serverUrl + '/config/test-data');
         if (!response.ok) throw new Error('Unable to load local defaults');
         const config = await response.json();
         this.hasSavedTestData = config.configured;
-        this.formData = Object.assign({}, this.formData, config.data);
-        this.formData.relatedParties = this.formData.relatedParties.map((party) => this.withRelatedPartyId(party));
+        const savedData = config.data || config;
+        const legacyProfiles = config.configured && !Array.isArray(savedData.applicantDefaults)
+          ? getLegacyDefaultProfiles(savedData)
+          : {applicantDefaults: [], businessDefaults: []};
+        this.applicantDefaults = savedData.applicantDefaults || legacyProfiles.applicantDefaults;
+        this.businessDefaults = savedData.businessDefaults || legacyProfiles.businessDefaults;
+        if (this.applicantDefaults.length) {
+          this.selectedApplicantDefaultId = this.applicantDefaults[0].id;
+          this.selectApplicantDefault();
+        }
+        if (this.businessDefaults.length) {
+          this.selectedBusinessDefaultId = this.businessDefaults[0].id;
+          this.selectBusinessDefault();
+        }
       } catch (error) {
         this.output = `Unable to load local defaults: ${error.message}`;
-      }
-    },
-    async saveTestDataDefaults() {
-      this.isSavingDefaults = true;
-      try {
-        const response = await fetch(serverUrl + '/config/test-data', {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({data: this.formData})
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Unable to save local defaults');
-        this.hasSavedTestData = true;
-        this.output = result.message;
-      } catch (error) {
-        this.output = `Error: ${error.message}`;
-      } finally {
-        this.isSavingDefaults = false;
       }
     },
     applyRunStatus(status) {
@@ -847,6 +1056,31 @@ body {
   border: 1px solid #d9e2ec;
   border-radius: 8px;
   background: #fbfdff;
+}
+
+.default-profile-manager {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem;
+  border: 1px solid #cbddeb;
+  border-radius: 6px;
+  background: #f2f8fd;
+}
+
+.default-profile-manager label {
+  margin-bottom: 0.35rem;
+  color: #1f4d7b;
+  font-weight: 600;
+}
+
+.default-profile-manager__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+
+.default-profile-manager__actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .ownership-tree {

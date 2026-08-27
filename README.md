@@ -17,8 +17,8 @@ Open http://localhost:4000 after both the client and server have started.
 
 ## Configure a simulation
 
-- Set the test data in the form, then select **Save as Local Defaults** to
-  reuse it in later local runs. Defaults are stored in
+- Save named applicant and business profiles from their respective cards, then
+  select a profile whenever you need it. Profiles are stored in
   `server/.local/test-data.json`; keep this machine-specific file out of Git.
 - Consumer simulations generate a unique SSN and date of birth for each run by
   default. Turn off **Generate a unique SSN and date of birth** to provide
