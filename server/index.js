@@ -9,11 +9,14 @@ const port = process.env.PORT || 4001;
 
 const localConfigDirectory = nodePath.join(__dirname, '.local');
 const localTestDataPath = nodePath.join(localConfigDirectory, 'test-data.json');
-const testDataConfigFields = [
+const applicantProfileFields = [
     'email', 'password', 'firstName', 'lastName', 'phone', 'citizenshipStatus',
     'countryOfCitizenship', 'residencyIssueDate', 'residencyEntryDate', 'residentNumber',
     'residentHasSsn', 'randomizeIdentity', 'dob', 'ssn', 'address', 'city', 'zip', 'hasCoApplicant',
-    'coappFirstName', 'coappLastName', 'coappPhone', 'coappEmail', 'businessName',
+    'coappFirstName', 'coappLastName', 'coappPhone', 'coappEmail'
+];
+const businessProfileFields = [
+    'businessName',
     'businessEntityType', 'randomizeBusinessIdentity', 'businessEin', 'businessPhone', 'businessIncorporationDate',
     'businessAddress', 'businessCity', 'businessState', 'businessZip', 'businessOwnerPercentage'
 ];
@@ -59,16 +62,89 @@ const normalizeRelatedParties = (relatedParties) => {
     });
 };
 
-const pickTestDataFields = (data) => {
-    const savedData = testDataConfigFields.reduce((result, field) => {
-    const value = data[field];
+const pickProfileFields = (data, fields) => fields.reduce((result, field) => {
+    const value = data && data[field];
     if (typeof value === 'string' || typeof value === 'boolean') {
         result[field] = value;
     }
     return result;
-    }, {});
-    savedData.relatedParties = normalizeRelatedParties(data.relatedParties);
-    return savedData;
+}, {});
+
+const getApplicantProfileName = (data = {}) => [data.firstName, data.lastName]
+    .filter((value) => typeof value === 'string' && value.trim())
+    .map((value) => value.trim())
+    .join(' ') || 'Unnamed applicant';
+
+const getBusinessProfileName = (data = {}) => typeof data.businessName === 'string' && data.businessName.trim()
+    ? data.businessName.trim()
+    : 'Unnamed business';
+
+const normalizeProfile = (profile, fields, type) => {
+    if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
+        throw new Error(`Each ${type} default must be an object`);
+    }
+
+    const id = typeof profile.id === 'string' ? profile.id.trim() : '';
+    const requestedName = typeof profile.name === 'string' ? profile.name.trim() : '';
+    if (!id || id.length > 120 || (type !== 'applicant' && type !== 'business' && (!requestedName || requestedName.length > 100))) {
+        throw new Error(`${type[0].toUpperCase() + type.slice(1)} defaults need an id and a name up to 100 characters`);
+    }
+
+    const data = pickProfileFields(profile.data, fields);
+    if (type === 'business') {
+        data.relatedParties = normalizeRelatedParties(profile.data && profile.data.relatedParties);
+    }
+    const name = type === 'applicant' ? getApplicantProfileName(data) :
+        type === 'business' ? getBusinessProfileName(data) : requestedName;
+    return {id, name, data};
+};
+
+const normalizeProfiles = (profiles, fields, type) => {
+    if (!Array.isArray(profiles)) {
+        throw new Error(`${type[0].toUpperCase() + type.slice(1)} defaults must be a list`);
+    }
+    const ids = new Set();
+    return profiles.map((profile) => {
+        const normalized = normalizeProfile(profile, fields, type);
+        if (ids.has(normalized.id)) {
+            throw new Error(`${type[0].toUpperCase() + type.slice(1)} default ids must be unique`);
+        }
+        ids.add(normalized.id);
+        return normalized;
+    });
+};
+
+const legacyTestDataConfig = (data) => ({
+    version: 2,
+    applicantDefaults: [{
+        id: 'legacy-applicant-default',
+        name: getApplicantProfileName(data),
+        data: pickProfileFields(data, applicantProfileFields)
+    }],
+    businessDefaults: [{
+        id: 'legacy-business-default',
+        name: getBusinessProfileName(data),
+        data: Object.assign(pickProfileFields(data, businessProfileFields), {
+            relatedParties: normalizeRelatedParties(data && data.relatedParties)
+        })
+    }]
+});
+
+const normalizeTestDataConfig = (data) => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('Test-data defaults must be an object');
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(data, 'applicantDefaults') &&
+        !Object.prototype.hasOwnProperty.call(data, 'businessDefaults')) {
+        return legacyTestDataConfig(data);
+    }
+
+    return {
+        version: 2,
+        applicantDefaults: normalizeProfiles(data.applicantDefaults, applicantProfileFields, 'applicant'),
+        businessDefaults: normalizeProfiles(data.businessDefaults, businessProfileFields, 'business')
+    };
 };
 
 const getRunStatus = () => ({
@@ -227,16 +303,21 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/config/test-data', (_req, res) => {
-    const data = readLocalTestData();
-    return res.json({configured: Boolean(data), data: data || {}});
+    try {
+        const data = readLocalTestData();
+        const config = data ? normalizeTestDataConfig(data) : {version: 2, applicantDefaults: [], businessDefaults: []};
+        return res.json({configured: Boolean(data), ...config});
+    } catch (error) {
+        return res.status(400).json({error: error.message || 'Unable to load local test-data defaults'});
+    }
 });
 
 app.put('/config/test-data', (req, res) => {
     try {
-        const data = pickTestDataFields(req.body && req.body.data ? req.body.data : {});
+        const data = normalizeTestDataConfig(req.body && req.body.data ? req.body.data : req.body);
         fs.mkdirSync(localConfigDirectory, {recursive: true});
         fs.writeFileSync(localTestDataPath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
-        return res.json({message: 'Local test-data defaults saved', data});
+        return res.json({configured: true, message: 'Local test-data profiles saved', ...data});
     } catch (error) {
         console.error('Unable to save local test-data defaults:', error);
         return res.status(400).json({error: error.message || 'Unable to save local test-data defaults'});
