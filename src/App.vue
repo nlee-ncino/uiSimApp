@@ -107,6 +107,28 @@
         </label>
       </div>
 
+      <div v-if="formData.isPrefill && latestApplicantInfo" class="latest-applicant-card" :class="{'latest-applicant-card--applied': formData.reuseLatestApplicantInfo}">
+        <div class="latest-applicant-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="12" cy="8" r="3.5"></circle>
+            <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
+          </svg>
+        </div>
+        <div class="latest-applicant-card__content">
+          <strong>{{ formData.reuseLatestApplicantInfo ? 'Applying with Existing User' : 'Latest test-run applicant is available' }}</strong>
+          <span class="latest-applicant-card__name">{{ getLatestApplicantName() }}</span>
+          <small class="form-text text-muted">
+            {{ latestApplicantInfo.applicant.email }} · saved {{ formatLatestApplicantDate(latestApplicantInfo.capturedAt) }}
+          </small>
+        </div>
+        <button type="button" class="btn btn-outline-primary" @click="applyLatestApplicantInfo" :disabled="isRunning">
+          {{ formData.reuseLatestApplicantInfo ? 'Using Latest Applicant' : 'Use Latest Applicant' }}
+        </button>
+      </div>
+      <small v-else-if="formData.isPrefill && !isLoadingLatestApplicantInfo" class="form-text text-muted latest-applicant-empty">
+        No completed new-user run has saved applicant information yet.
+      </small>
+
       <div class="form-group">
         <a class="d-flex align-items-center" @click="toggleSection('customUserInfo')"
            style="color: black; text-decoration: none; cursor: pointer;">
@@ -472,8 +494,12 @@ Unsecured Loan	https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?p
                     class="form-control"
                     id="customUrl"
                     v-model="formData.customUrl"
+                    @input="markCustomUrlAsEdited"
                     placeholder="https://custom6.omni-qa.ncino.com/homehub/prefill_form/consumer?product_id=a0uao0000009SSJAA2"
                 />
+                <small v-if="isCustomUrlPrefilledFromLatestApplicant" class="form-text custom-url-prefilled-indicator" role="status">
+                  ✓ Prefilled from latest test-run applicant
+                </small>
               </div>
             </b-tab>
           </b-tabs>
@@ -552,6 +578,7 @@ const getDefaultFormData = () => ({
   city: 'Fantasy Island',
   zip: '60750',
   isPrefill: false,
+  reuseLatestApplicantInfo: false,
   hasCoApplicant: false,
   coappFirstName: 'NateCoapp',
   coappLastName: 'Pass',
@@ -591,6 +618,9 @@ export default {
       },
       output: '',
       hasSavedTestData: false,
+      latestApplicantInfo: null,
+      isLoadingLatestApplicantInfo: false,
+      isCustomUrlPrefilledFromLatestApplicant: false,
       isSavingDefaults: false,
       applicantDefaults: [],
       businessDefaults: [],
@@ -629,10 +659,15 @@ export default {
         if (!this.formData.businessEin) this.formData.businessEin = '12-3456789';
         if (!this.formData.businessIncorporationDate) this.formData.businessIncorporationDate = '01/01/2010';
       }
+    },
+    'formData.isPrefill'(isPrefill) {
+      this.formData.reuseLatestApplicantInfo = false;
+      if (isPrefill) this.loadLatestApplicantInfo();
+      else this.resetApplicantInfo();
     }
   },
   mounted() {
-    this.loadTestDataDefaults();
+    this.loadTestDataDefaults().then(() => this.loadLatestApplicantInfo());
     this.refreshTestStatus();
     this.statusTimer = window.setInterval(this.refreshTestStatus, 2000);
   },
@@ -716,6 +751,62 @@ export default {
     },
     getBusinessProfileName() {
       return getBusinessProfileName(this.formData);
+    },
+    getLatestApplicantName() {
+      return getApplicantProfileName(this.latestApplicantInfo && this.latestApplicantInfo.applicant);
+    },
+    markCustomUrlAsEdited() {
+      this.isCustomUrlPrefilledFromLatestApplicant = false;
+    },
+    formatLatestApplicantDate(timestamp) {
+      if (!timestamp) return 'recently';
+      const date = new Date(timestamp);
+      return Number.isNaN(date.getTime()) ? 'recently' : date.toLocaleString();
+    },
+    async loadLatestApplicantInfo() {
+      this.isLoadingLatestApplicantInfo = true;
+      try {
+        const response = await fetch(serverUrl + '/config/latest-applicant');
+        if (!response.ok) throw new Error('Unable to load the latest applicant info');
+        const result = await response.json();
+        const latestApplicantInfo = result.available ? result.latestApplicantInfo : null;
+        this.latestApplicantInfo = latestApplicantInfo;
+        const latestCustomUrl = latestApplicantInfo && latestApplicantInfo.applicant
+          ? latestApplicantInfo.applicant.customUrl
+          : '';
+        if (latestCustomUrl && !this.formData.customUrl) {
+          this.formData.customUrl = latestCustomUrl;
+          this.isCustomUrlPrefilledFromLatestApplicant = true;
+        }
+      } catch (error) {
+        this.latestApplicantInfo = null;
+        this.output = `Unable to load latest applicant info: ${error.message}`;
+      } finally {
+        this.isLoadingLatestApplicantInfo = false;
+      }
+    },
+    applyLatestApplicantInfo() {
+      if (!this.latestApplicantInfo || !this.latestApplicantInfo.applicant) return;
+      const applicant = this.latestApplicantInfo.applicant;
+      const shouldMarkCustomUrlAsPrefilled = !this.formData.customUrl && Boolean(applicant.customUrl);
+      const customUrl = this.formData.customUrl || applicant.customUrl || '';
+      this.formData = Object.assign({}, this.formData, applicant, {
+        customUrl,
+        isPrefill: true,
+        reuseLatestApplicantInfo: true,
+        randomizeIdentity: false
+      });
+      if (shouldMarkCustomUrlAsPrefilled) this.isCustomUrlPrefilledFromLatestApplicant = true;
+      this.output = 'Latest test-run applicant info applied.';
+    },
+    resetApplicantInfo() {
+      const selectedProfile = this.applicantDefaults.find((profile) => profile.id === this.selectedApplicantDefaultId);
+      const defaultApplicantData = pickProfileFields(getDefaultFormData(), applicantProfileFields);
+      const applicantData = Object.assign({}, defaultApplicantData, selectedProfile ? selectedProfile.data : {});
+      this.formData = Object.assign({}, this.formData, applicantData, {
+        isPrefill: false,
+        reuseLatestApplicantInfo: false
+      });
     },
     applyApplicantDefault(profile) {
       if (!profile) return;
@@ -837,6 +928,7 @@ export default {
       this.runStatus = status.run || {};
       if (wasRunning && !this.isRunning && this.runStatus.status) {
         this.output = `Test run ${this.runStatus.status}.`;
+        this.loadLatestApplicantInfo();
       }
     },
     async refreshTestStatus() {
@@ -871,6 +963,7 @@ export default {
         password: this.formData.password,
         testType: this.formData.testType,
         isPrefill: this.formData.isPrefill,
+        reuseLatestApplicantInfo: this.formData.reuseLatestApplicantInfo,
         hasCoApplicant: this.formData.hasCoApplicant,
         coappFirstName: this.formData.coappFirstName,
         coappLastName: this.formData.coappLastName,
@@ -996,6 +1089,77 @@ body {
 .setup-card--saved {
   background: #edf9f1;
   border-color: #b7dfc3;
+}
+
+.latest-applicant-card {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  margin: 0.5rem 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #b7dfc3;
+  border-radius: 8px;
+  background: #f2fbf4;
+}
+
+.latest-applicant-card--applied {
+  border-color: #8fc69e;
+  background: #eef9f0;
+  box-shadow: 0 2px 6px rgba(31, 77, 47, 0.08);
+}
+
+.latest-applicant-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #26733d;
+  border-radius: 50%;
+  background: #d8efdc;
+}
+
+.latest-applicant-card__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.latest-applicant-card__content {
+  min-width: 0;
+}
+
+.latest-applicant-card__content strong,
+.latest-applicant-card__name {
+  display: block;
+}
+
+.latest-applicant-card__name {
+  margin-top: 0.15rem;
+  color: #1f4d2f;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.latest-applicant-card .form-text {
+  margin-top: 0.25rem;
+}
+
+.latest-applicant-empty {
+  display: block;
+  margin: -0.75rem 0 1.5rem;
+}
+
+.custom-url-prefilled-indicator {
+  display: block;
+  margin-top: 0.4rem;
+  color: #26733d !important;
+  font-weight: 600;
 }
 
 .setup-card p,
@@ -1284,9 +1448,14 @@ button[type="submit"] {
 
 @media (max-width: 575px) {
   .setup-card,
-  .run-status {
+  .run-status,
+  .latest-applicant-card {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .latest-applicant-card {
+    grid-template-columns: 1fr;
   }
 }
 

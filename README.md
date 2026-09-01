@@ -23,6 +23,11 @@ Open http://localhost:4000 after both the client and server have started.
 - Consumer simulations generate a unique SSN and date of birth for each run by
   default. Turn off **Generate a unique SSN and date of birth** to provide
   fixed values instead.
+- Each new consumer run saves its resolved applicant login and KYC values in
+  `server/.local/latest-test_run_applicant_info.json`, including the Custom URL
+  used for the run. The URL is restored into the Custom URL field on startup.
+  Check **Existing User who has completed KYC**, then choose **Use Latest
+  Applicant** to reuse those values for another product.
 - Business simulations generate a unique EIN and incorporation date by
   default. Turn off **Generate a unique EIN and incorporation date** to
   provide fixed values instead.
