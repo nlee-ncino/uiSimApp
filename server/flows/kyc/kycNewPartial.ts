@@ -1,9 +1,34 @@
 import {generateRandomDob, generateRandomResidentNumber, generateRandomSsn} from "../../vars/utilMethods";
+import {updateLatestTestRunApplicantInfo} from "../../vars/latestTestRunApplicantInfo";
 
 export const kycNewPartial = async (page: any) => {
     const citizenshipStatus = (process.env.CITIZENSHIPSTATUS || 'citizen').toLowerCase();
     const dob = process.env.DOB || generateRandomDob();
     const residentHasSsn = (process.env.RESIDENTHASSSN || 'true').toLowerCase() !== 'false';
+    const fillsSsn = citizenshipStatus !== 'nonresident' && citizenshipStatus !== 'nra' &&
+        (citizenshipStatus !== 'permanentresident' || residentHasSsn);
+    const ssn = fillsSsn ? (process.env.SSN || generateRandomSsn()) : '';
+    const residentNumber = citizenshipStatus === 'permanentresident'
+        ? (process.env.RESIDENTNUMBER || generateRandomResidentNumber())
+        : '';
+    const address = process.env.ADDRESS || '200201 Test Rd';
+    const city = process.env.CITY || 'Fantasy Island';
+    const zipcode = process.env.ZIP || '60750';
+
+    updateLatestTestRunApplicantInfo({
+        citizenshipStatus,
+        countryOfCitizenship: process.env.COUNTRYOFCITIZENSHIP || 'AF - Afghanistan',
+        residencyIssueDate: process.env.RESIDENCYISSUEDATE || '01/01/2020',
+        residencyEntryDate: process.env.RESIDENCYENTRYDATE || '01/01/2020',
+        residentNumber,
+        residentHasSsn,
+        randomizeIdentity: false,
+        dob,
+        ssn,
+        address,
+        city,
+        zip: zipcode
+    });
 
     const selectFromDropdown = async (dropdown: any, optionName: string) => {
         await dropdown.click({delay: 200, force: true});
@@ -21,7 +46,6 @@ export const kycNewPartial = async (page: any) => {
         await page.waitForTimeout(200);
 
         if (fillSsn) {
-            const ssn = process.env.SSN || generateRandomSsn();
             await page.getByTestId('ssn-identification-number-field-input').fill(ssn);
             await page.waitForTimeout(200);
         }
@@ -29,14 +53,12 @@ export const kycNewPartial = async (page: any) => {
         await page.getByRole('textbox', {name: 'Street address'}).click();
         await page.waitForTimeout(200);
 
-        const address = process.env.ADDRESS || '200201 Test Rd';
         await page.getByRole('textbox', {name: 'Street address'}).fill(address);
         await page.waitForTimeout(200);
 
         await page.getByRole('textbox', {name: 'City'}).click();
         await page.waitForTimeout(200);
 
-        const city = process.env.CITY || 'Fantasy Island';
         await page.getByRole('textbox', {name: 'City'}).fill(city);
         await page.waitForTimeout(200);
 
@@ -50,7 +72,6 @@ export const kycNewPartial = async (page: any) => {
         await page.getByRole('textbox', {name: /zip/i}).click();
         await page.waitForTimeout(200);
 
-        const zipcode = process.env.ZIP || '60750';
         await page.getByRole('textbox', {name: /zip/i}).fill(zipcode);
         await page.waitForTimeout(200);
 
@@ -105,7 +126,6 @@ export const kycNewPartial = async (page: any) => {
         await page.keyboard.press('Escape');
         await page.waitForTimeout(200);
 
-        const residentNumber = process.env.RESIDENTNUMBER || generateRandomResidentNumber();
         await page.locator('[data-cy="permanent_resident_number-field"]').fill(residentNumber);
         await page.waitForTimeout(200);
 

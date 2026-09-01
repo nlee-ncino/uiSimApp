@@ -9,6 +9,7 @@ const port = process.env.PORT || 4001;
 
 const localConfigDirectory = nodePath.join(__dirname, '.local');
 const localTestDataPath = nodePath.join(localConfigDirectory, 'test-data.json');
+const latestApplicantInfoPath = nodePath.join(localConfigDirectory, 'latest-test_run_applicant_info.json');
 const applicantProfileFields = [
     'email', 'password', 'firstName', 'lastName', 'phone', 'citizenshipStatus',
     'countryOfCitizenship', 'residencyIssueDate', 'residencyEntryDate', 'residentNumber',
@@ -38,6 +39,28 @@ const readLocalTestData = () => {
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
     } catch (error) {
         console.error('Unable to read local test-data defaults:', error);
+        return null;
+    }
+};
+
+const readLatestApplicantInfo = () => {
+    if (!fs.existsSync(latestApplicantInfoPath)) {
+        return null;
+    }
+
+    try {
+        const parsed = JSON.parse(fs.readFileSync(latestApplicantInfoPath, 'utf8'));
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+            !parsed.applicant || typeof parsed.applicant !== 'object' || Array.isArray(parsed.applicant)) {
+            return null;
+        }
+        return {
+            version: parsed.version,
+            capturedAt: parsed.capturedAt,
+            applicant: parsed.applicant
+        };
+    } catch (error) {
+        console.error('Unable to read latest test-run applicant info:', error);
         return null;
     }
 };
@@ -349,6 +372,14 @@ app.put('/config/test-data', (req, res) => {
     }
 });
 
+app.get('/config/latest-applicant', (_req, res) => {
+    const latestApplicantInfo = readLatestApplicantInfo();
+    return res.json({
+        available: Boolean(latestApplicantInfo),
+        latestApplicantInfo
+    });
+});
+
 app.get('/test-status', (_req, res) => {
     return res.json(getRunStatus());
 });
@@ -371,6 +402,7 @@ app.post('/run-tests', (req, res) => {
             password,
             testType,
             isPrefill,
+            reuseLatestApplicantInfo,
             hasCoApplicant,
             coappFirstName,
             coappLastName,
@@ -432,6 +464,7 @@ app.post('/run-tests', (req, res) => {
             email,
             password,
             hasCoApplicant,
+            reuseLatestApplicantInfo,
             coappFirstName,
             coappLastName,
             coappPhone,
@@ -491,6 +524,7 @@ app.post('/run-tests-batch', (req, res) => {
             password,
             testType,
             isPrefill,
+            reuseLatestApplicantInfo,
             hasCoApplicant,
             coappFirstName,
             coappLastName,
@@ -511,6 +545,7 @@ app.post('/run-tests-batch', (req, res) => {
             address,
             city,
             zip,
+            randomizeIdentity,
             failEligibility,
             skipEligibility,
             prematureStop,
@@ -556,6 +591,7 @@ app.post('/run-tests-batch', (req, res) => {
                 email,
                 password,
                 hasCoApplicant,
+                reuseLatestApplicantInfo,
                 coappFirstName,
                 coappLastName,
                 coappPhone,
@@ -572,6 +608,7 @@ app.post('/run-tests-batch', (req, res) => {
                 phone,
                 dob: randomizeIdentity ? '' : dob,
                 ssn: randomizeIdentity ? '' : ssn,
+                randomizeIdentity,
                 address,
                 city,
                 zip,
